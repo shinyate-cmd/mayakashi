@@ -1601,6 +1601,7 @@
             clearLog();
             addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
             addLog('あなたは静かに闇へ紛れ、' + target.title + 'の' + target.name + ' を襲撃しました。', 'system', '', true, null);
+            addLog(formatVictimDiscovery(target), 'system', '', true, null);
             day++;
             if (checkGameOver()) return;
             addActionHint('「' + day + '日目の昼へ進む」を押してください。');
