@@ -578,32 +578,32 @@
       return audioCtx;
     }
 
-    function playTone(freq, duration, type, peakGain, attack, release, filterFreq) {
+    function playTone(freq, duration, type, peakGain, attack, release, filterFreq, delaySec) {
       if (!bgmEnabled || !freq || freq <= 0) return;
       var ctx = ensureAudioContext();
       if (!ctx) return;
 
-      var now = ctx.currentTime;
+      var startAt = ctx.currentTime + (delaySec || 0);
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
 
       osc.type = type || 'sine';
-      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.setValueAtTime(freq, startAt);
 
       var filterNode = null;
       if (filterFreq) {
         filterNode = ctx.createBiquadFilter();
         filterNode.type = 'lowpass';
-        filterNode.frequency.setValueAtTime(filterFreq, now);
+        filterNode.frequency.setValueAtTime(filterFreq, startAt);
       }
 
-      var atk = attack || 0.03;
-      var rel = release || Math.max(0.08, duration * 0.6);
+      var atk = attack || 0.025;
+      var rel = release || Math.max(0.08, duration * 0.65);
       var maxG = peakGain || 0.06;
 
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(maxG, now + atk);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + Math.max(atk + 0.02, duration + rel));
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.linearRampToValueAtTime(maxG, startAt + atk);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + Math.max(atk + 0.02, duration + rel));
 
       osc.connect(gain);
       if (filterNode) {
@@ -613,8 +613,22 @@
         gain.connect(ctx.destination);
       }
 
-      osc.start(now);
-      osc.stop(now + duration + rel + 0.03);
+      osc.start(startAt);
+      osc.stop(startAt + duration + rel + 0.03);
+    }
+
+    function playVictorySe() {
+      if (!bgmEnabled) return;
+      ensureAudioContext();
+      var fanfare = [
+        { freq: 523.25, dur: 0.13, delay: 0.00, gain: 0.085, type: 'triangle' },
+        { freq: 659.25, dur: 0.13, delay: 0.11, gain: 0.085, type: 'triangle' },
+        { freq: 783.99, dur: 0.15, delay: 0.22, gain: 0.090, type: 'triangle' },
+        { freq: 1046.50, dur: 0.42, delay: 0.34, gain: 0.105, type: 'sine' }
+      ];
+      fanfare.forEach(function(n) {
+        playTone(n.freq, n.dur, n.type, n.gain, 0.015, n.dur * 1.1, 2800, n.delay);
+      });
     }
 
     var bgmPatterns = {
@@ -700,7 +714,7 @@
         var p = bgmPatterns[currentBgmMood] || bgmPatterns.calm;
         var freq = p.notes[bgmStep % p.notes.length];
         if (freq > 0) {
-          playTone(freq, p.dur, p.type, p.gain, 0.025, p.dur * 0.7, p.filter);
+          playTone(freq, p.dur, p.type, p.gain, 0.025, p.dur * 0.7, p.filter, 0);
         }
         bgmStep++;
       };
@@ -1669,21 +1683,33 @@
     function checkGameOver() {
       var wolves = players.filter(function(p) { return p.alive && p.role === '人狼'; }).length;
       var humans = players.filter(function(p) { return p.alive && p.role !== '人狼'; }).length;
+      var playerIsWolf = players[0] && players[0].role === '人狼';
 
       if (wolves === 0) {
-        endGame('人狼は追放され、館に平穏が戻りました。【村人陣営の勝利】です。', 'victory');
+        endGame(
+          '人狼は追放され、館に平穏が戻りました。【村人陣営の勝利】です。',
+          playerIsWolf ? 'defeat' : 'victory',
+          !playerIsWolf
+        );
         return true;
       }
       if (wolves >= humans) {
-        endGame('生き残った人々は人狼の牙に倒れました。【人狼陣営の勝利】です。', 'defeat');
+        endGame(
+          '生き残った人々は人狼の牙に倒れました。【人狼陣営の勝利】です。',
+          playerIsWolf ? 'victory' : 'defeat',
+          playerIsWolf
+        );
         return true;
       }
       return false;
     }
 
-    function endGame(resultMessage, mood) {
+    function endGame(resultMessage, mood, isPlayerWin) {
       screenState = 'ended';
       setBgmMood(mood || 'victory');
+      if (isPlayerWin) {
+        playVictorySe();
+      }
       clearLog();
       updateStatus();
       addLog('=== 結果発表 ===', 'system', '', true, null);
