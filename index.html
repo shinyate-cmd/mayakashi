@@ -802,7 +802,7 @@
 
       var fixed = speaker.voiceProfile || createFixedVoiceProfile(speaker.gender, speaker.age, speaker.personality, speaker.id || 0);
       return {
-        pitch: Math.max(0.5, Math.min(1.8, fixed.pitch)),
+        pitch: Math.max(0.55, Math.min(1.8, fixed.pitch)),
         rate: Math.max(0.5, Math.min(2.0, baseRate * fixed.rateScale))
       };
     }
@@ -842,6 +842,7 @@
     }
 
     function goToSetupScreen() {
+      stopSpeech();
       ensureAudioContext();
       setBgmMood('calm');
       screenState = 'playing';
@@ -1139,35 +1140,39 @@
         if (npc.declaredSeer) {
           if (npc.role === '占い師' && npc.lastSeerResult) {
             var target = players.find(function(p) { return p.id === npc.lastSeerResult.targetId; });
-            var targetLabel = target.title + 'の' + target.name;
-            var line = npc.lastSeerResult.isWolf
-              ? getPersonaLine(npc.personality, npc.gender, 'reportWolf', targetLabel)
-              : getPersonaLine(npc.personality, npc.gender, 'reportHuman', targetLabel);
-            addLog(speakerLabel + line, 'declare-msg', '', true, npc);
-            dayStatements.push({
-              speaker: npc,
-              kind: npc.lastSeerResult.isWolf ? 'reportWolf' : 'reportHuman',
-              target: target,
-              summary: npc.title + ' ' + npc.name + 'の占い報告（' + targetLabel + 'は' + (npc.lastSeerResult.isWolf ? '人狼' : '村人') + '）'
-            });
-            if (npc.lastSeerResult.isWolf) suspicionScores[target.id] += 4;
-            else suspicionScores[target.id] -= 2;
+            if (target) {
+              var targetLabel = target.title + 'の' + target.name;
+              var line = npc.lastSeerResult.isWolf
+                ? getPersonaLine(npc.personality, npc.gender, 'reportWolf', targetLabel)
+                : getPersonaLine(npc.personality, npc.gender, 'reportHuman', targetLabel);
+              addLog(speakerLabel + line, 'declare-msg', '', true, npc);
+              dayStatements.push({
+                speaker: npc,
+                kind: npc.lastSeerResult.isWolf ? 'reportWolf' : 'reportHuman',
+                target: target,
+                summary: npc.title + ' ' + npc.name + 'の占い報告（' + targetLabel + 'は' + (npc.lastSeerResult.isWolf ? '人狼' : '村人') + '）'
+              });
+              if (npc.lastSeerResult.isWolf) suspicionScores[target.id] += 4;
+              else suspicionScores[target.id] -= 2;
+            }
           } else if (npc.role === '人狼' && day >= 2) {
             var candidates = aliveAll.filter(function(p) { return p.id !== npc.id; });
-            var fakeTarget = candidates[Math.floor(Math.random() * candidates.length)];
-            var fakeIsWolf = fakeTarget.role !== '人狼' && Math.random() < 0.6;
-            var fTargetLabel = fakeTarget.title + 'の' + fakeTarget.name;
-            var fLine = fakeIsWolf
-              ? getPersonaLine(npc.personality, npc.gender, 'reportWolf', fTargetLabel)
-              : getPersonaLine(npc.personality, npc.gender, 'reportHuman', fTargetLabel);
-            addLog(speakerLabel + fLine, 'declare-msg', '', true, npc);
-            dayStatements.push({
-              speaker: npc,
-              kind: fakeIsWolf ? 'reportWolf' : 'reportHuman',
-              target: fakeTarget,
-              summary: npc.title + ' ' + npc.name + 'の占い報告（' + fTargetLabel + 'は' + (fakeIsWolf ? '人狼' : '村人') + '）'
-            });
-            if (fakeIsWolf) suspicionScores[fakeTarget.id] += 3;
+            if (candidates.length > 0) {
+              var fakeTarget = candidates[Math.floor(Math.random() * candidates.length)];
+              var fakeIsWolf = fakeTarget.role !== '人狼' && Math.random() < 0.6;
+              var fTargetLabel = fakeTarget.title + 'の' + fakeTarget.name;
+              var fLine = fakeIsWolf
+                ? getPersonaLine(npc.personality, npc.gender, 'reportWolf', fTargetLabel)
+                : getPersonaLine(npc.personality, npc.gender, 'reportHuman', fTargetLabel);
+              addLog(speakerLabel + fLine, 'declare-msg', '', true, npc);
+              dayStatements.push({
+                speaker: npc,
+                kind: fakeIsWolf ? 'reportWolf' : 'reportHuman',
+                target: fakeTarget,
+                summary: npc.title + ' ' + npc.name + 'の占い報告（' + fTargetLabel + 'は' + (fakeIsWolf ? '人狼' : '村人') + '）'
+              });
+              if (fakeIsWolf) suspicionScores[fakeTarget.id] += 3;
+            }
           }
         }
       });
@@ -1180,6 +1185,7 @@
 
       aliveNPCs.forEach(function(npc) {
         var candidates = aliveAll.filter(function(p) { return p.id !== npc.id; });
+        if (candidates.length === 0) return;
         var target = candidates[Math.floor(Math.random() * candidates.length)];
         var gesture = getRandomGesture(npc);
         var speakerLabel = '【' + npc.title + ' ' + npc.name + '】';
@@ -1224,9 +1230,9 @@
       if (players[0].alive) {
         showPlayerDiscussionActions();
       } else {
-        addLog(players[0].name + 'は脱落しているため、議論を見守っています。', 'system', '', true, null);
-        addActionHint('「投票フェーズへ進む」を押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="startVotePhase()">投票フェーズへ進む</button>';
+        addLog(players[0].name + 'は脱落しているため発言できません。生存者による昼の投票結果を確認しましょう。', 'system', '', true, null);
+        addActionHint('「昼の投票結果を確認する」を押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="executeVote(null)">昼の投票結果を確認する</button>';
       }
     }
 
@@ -1299,10 +1305,12 @@
           });
           if (me.role === '占い師' && me.lastSeerResult) {
             var t = players.find(function(p) { return p.id === me.lastSeerResult.targetId; });
-            var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人（白）】';
-            addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
-            if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
-            else suspicionScores[t.id] -= 2.5;
+            if (t) {
+              var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人（白）】';
+              addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
+              if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
+              else suspicionScores[t.id] -= 2.5;
+            }
           } else if (me.role !== '占い師' && day >= 2) {
             askFakeSeerReport();
             return;
@@ -1318,10 +1326,12 @@
         btnReport.onclick = function() {
           if (me.role === '占い師' && me.lastSeerResult) {
             var t = players.find(function(p) { return p.id === me.lastSeerResult.targetId; });
-            var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人（白）】';
-            addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
-            if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
-            else suspicionScores[t.id] -= 2.5;
+            if (t) {
+              var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人（白）】';
+              addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
+              if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
+              else suspicionScores[t.id] -= 2.5;
+            }
             startVotePhase();
           } else {
             askFakeSeerReport();
@@ -1455,17 +1465,13 @@
     }
 
     function startVotePhase() {
+      if (!players[0].alive) {
+        executeVote(null);
+        return;
+      }
       setBgmMood('suspense');
       pendingVoteTarget = null;
       addLog('=== ' + day + '日目の投票フェーズ ===', 'system', '', true, null);
-
-      if (!players[0].alive) {
-        addLog(players[0].name + 'は脱落しているため、投票権はありません。生存者の投票を見守ります。', 'system', '', true, null);
-        addActionHint('「投票結果を確認する」を押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="executeVote(null)">投票結果を確認する</button>';
-        return;
-      }
-
       addLog('誰を追放しますか？', 'system', '', true, null);
       addActionHint('追放したい人物のボタンを押してください。');
       renderButtons(
@@ -1497,7 +1503,18 @@
       clearLog();
       addLog('=== ' + day + '日目の投票結果 ===', 'system', '', true, null);
 
+      if (!players[0].alive) {
+        addLog('（' + players[0].name + 'は脱落しているため投票せず、生存者の投票結果を見守ります）', 'system', '', true, null);
+      }
+
       var alivePlayers = players.filter(function(p) { return p.alive; });
+      if (alivePlayers.length === 0) {
+        if (checkGameOver()) return;
+        addActionHint('「夜フェーズへ進む」を押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="startNightPhase()">夜フェーズへ進む</button>';
+        return;
+      }
+
       var votes = {};
       alivePlayers.forEach(function(p) { votes[p.id] = 0; });
 
@@ -1508,6 +1525,7 @@
 
       alivePlayers.filter(function(p) { return !p.isPlayer; }).forEach(function(npc) {
         var candidates = alivePlayers.filter(function(p) { return p.id !== npc.id; });
+        if (candidates.length === 0) return;
         var choice = candidates[0];
 
         if (npc.role === '人狼') {
@@ -1570,31 +1588,37 @@
       var npcSeer = players.find(function(p) { return p.alive && !p.isPlayer && p.role === '占い師'; });
       if (npcSeer) {
         var targets = players.filter(function(p) { return p.alive && p.id !== npcSeer.id; });
-        var target = targets[Math.floor(Math.random() * targets.length)];
-        npcSeer.lastSeerResult = { targetId: target.id, isWolf: target.role === '人狼' };
+        if (targets.length > 0) {
+          var target = targets[Math.floor(Math.random() * targets.length)];
+          npcSeer.lastSeerResult = { targetId: target.id, isWolf: target.role === '人狼' };
+        }
       }
 
       if (me.alive && me.role === '占い師') {
-        addLog('占い師の能力：誰の正体を占いますか？', 'system', '', true, null);
-        addActionHint('占いたい人物のボタンを押してください。');
-        renderButtons(
-          players.filter(function(p) { return p.alive && !p.isPlayer; }),
-          function(target) {
-            clearLog();
-            addLog('=== ' + day + '日目の夜フェーズ（占い結果） ===', 'system', '', true, null);
-            var isWolf = target.role === '人狼';
-            me.lastSeerResult = { targetId: target.id, isWolf: isWolf };
-            var result = isWolf ? '【人狼】' : '【人狼ではない】';
-            addLog('占いの結果、' + target.title + 'の' + target.name + ' は ' + result + ' でした。（翌日の議論で報告できます）', 'declare-msg', '', true, null);
-            addActionHint('「夜の出来事へ進む」を押してください。');
-            controlsEl.innerHTML = '<button type="button" onclick="wolfAttack()">夜の出来事へ進む</button>';
-          }
-        );
-      } else {
-        addLog('静まり返った館の中で、それぞれの夜が更けていく。', 'system', '', true, null);
-        addActionHint('「夜の出来事へ進む」を押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="wolfAttack()">夜の出来事へ進む</button>';
+        var seerTargets = players.filter(function(p) { return p.alive && !p.isPlayer; });
+        if (seerTargets.length > 0) {
+          addLog('占い師の能力：誰の正体を占いますか？', 'system', '', true, null);
+          addActionHint('占いたい人物のボタンを押してください。');
+          renderButtons(
+            seerTargets,
+            function(target) {
+              clearLog();
+              addLog('=== ' + day + '日目の夜フェーズ（占い結果） ===', 'system', '', true, null);
+              var isWolf = target.role === '人狼';
+              me.lastSeerResult = { targetId: target.id, isWolf: isWolf };
+              var result = isWolf ? '【人狼】' : '【人狼ではない】';
+              addLog('占いの結果、' + target.title + 'の' + target.name + ' は ' + result + ' でした。（翌日の議論で報告できます）', 'declare-msg', '', true, null);
+              addActionHint('「夜の出来事へ進む」を押してください。');
+              controlsEl.innerHTML = '<button type="button" onclick="wolfAttack()">夜の出来事へ進む</button>';
+            }
+          );
+          return;
+        }
       }
+
+      addLog('静まり返った館の中で、それぞれの夜が更けていく。', 'system', '', true, null);
+      addActionHint('「夜の出来事へ進む」を押してください。');
+      controlsEl.innerHTML = '<button type="button" onclick="wolfAttack()">夜の出来事へ進む</button>';
     }
 
     function wolfAttack() {
@@ -1602,34 +1626,38 @@
       var wolf = players.find(function(p) { return p.alive && p.role === '人狼'; });
       if (wolf) {
         var targets = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
-        if (wolf.isPlayer) {
-          clearLog();
-          addLog('=== ' + day + '日目の夜フェーズ（襲撃） ===', 'system', '', true, null);
-          addLog('人狼の能力：今夜、誰を襲撃しますか？', 'system', '', true, null);
-          addActionHint('襲撃したい人物のボタンを押してください。');
-          renderButtons(targets, function(target) {
-            target.alive = false;
-            renderRosterPanel();
+        if (targets.length > 0) {
+          if (wolf.isPlayer) {
+            clearLog();
+            addLog('=== ' + day + '日目の夜フェーズ（襲撃） ===', 'system', '', true, null);
+            addLog('人狼の能力：今夜、誰を襲撃しますか？', 'system', '', true, null);
+            addActionHint('襲撃したい人物のボタンを押してください。');
+            renderButtons(targets, function(target) {
+              target.alive = false;
+              renderRosterPanel();
+              clearLog();
+              addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
+              addLog('あなたは静かに闇へ紛れ、' + target.title + 'の' + target.name + ' を襲撃しました。', 'system', '', true, null);
+              addLog(formatVictimDiscovery(target), 'system', '', true, null);
+              day++;
+              if (checkGameOver()) return;
+              addActionHint('「' + day + '日目の昼へ進む」を押してください。');
+              controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
+            });
+            return;
+          } else {
             clearLog();
             addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
-            addLog('あなたは静かに闇へ紛れ、' + target.title + 'の' + target.name + ' を襲撃しました。', 'system', '', true, null);
-            addLog(formatVictimDiscovery(target), 'system', '', true, null);
-            day++;
-            if (checkGameOver()) return;
-            addActionHint('「' + day + '日目の昼へ進む」を押してください。');
-            controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
-          });
-          return;
-        } else {
-          clearLog();
-          addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
-          var declaredSeers = targets.filter(function(p) { return p.declaredSeer; });
-          var victim = declaredSeers.length > 0 && Math.random() < 0.7
-            ? declaredSeers[0]
-            : targets[Math.floor(Math.random() * targets.length)];
-          victim.alive = false;
-          renderRosterPanel();
-          addLog(formatVictimDiscovery(victim), 'system', '', true, null);
+            var declaredSeers = targets.filter(function(p) { return p.declaredSeer; });
+            var victim = declaredSeers.length > 0 && Math.random() < 0.7
+              ? declaredSeers[0]
+              : targets[Math.floor(Math.random() * targets.length)];
+            if (victim) {
+              victim.alive = false;
+              renderRosterPanel();
+              addLog(formatVictimDiscovery(victim), 'system', '', true, null);
+            }
+          }
         }
       }
       day++;
