@@ -1458,6 +1458,14 @@
       setBgmMood('suspense');
       pendingVoteTarget = null;
       addLog('=== ' + day + '日目の投票フェーズ ===', 'system', '', true, null);
+
+      if (!players[0].alive) {
+        addLog(players[0].name + 'は脱落しているため、投票権はありません。生存者の投票を見守ります。', 'system', '', true, null);
+        addActionHint('「投票結果を確認する」を押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="executeVote(null)">投票結果を確認する</button>';
+        return;
+      }
+
       addLog('誰を追放しますか？', 'system', '', true, null);
       addActionHint('追放したい人物のボタンを押してください。');
       renderButtons(
@@ -1468,6 +1476,10 @@
 
     function showPlayerVoteSpeech(target) {
       var me = players[0];
+      if (!me.alive) {
+        executeVote(null);
+        return;
+      }
       pendingVoteTarget = target;
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
       var targetLabel = target.title + 'の' + target.name;
@@ -1489,7 +1501,7 @@
       var votes = {};
       alivePlayers.forEach(function(p) { votes[p.id] = 0; });
 
-      if (playerChoice) {
+      if (players[0].alive && playerChoice && playerChoice.alive) {
         votes[playerChoice.id]++;
         addLog(players[0].title + ' ' + players[0].name + ' は ' + playerChoice.title + 'の' + playerChoice.name + ' に投票しました。', '', '', true, players[0]);
       }
