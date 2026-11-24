@@ -693,86 +693,149 @@
       });
     }
 
-    var bgmPatterns = {
-      opening: {
-        intervalMs: 620,
-        notes: [
-          146.83, 220.00, 261.63, 329.63, 261.63, 220.00, 349.23, 329.63,
-          130.81, 196.00, 246.94, 329.63, 246.94, 196.00, 293.66, 261.63,
-          116.54, 174.61, 220.00, 293.66, 220.00, 174.61, 261.63, 220.00,
-          110.00, 164.81, 220.00, 277.18, 220.00, 164.81, 246.94, 220.00
-        ],
-        type: 'sine',
-        gain: 0.072,
-        dur: 0.95,
-        filter: 1050
-      },
+    // タイトルBGM：導入の静けさ（0〜15）＋サビの展開（16〜31）
+    var openingMelodySequence = [
+      // 導入（静寂と予感）
+      220.00, 261.63, 329.63, 261.63, 220.00, 293.66, 329.63, 261.63,
+      196.00, 246.94, 329.63, 246.94, 196.00, 261.63, 293.66, 261.63,
+      // サビ（閉ざされた館のドラマと高揚）
+      440.00, 523.25, 587.33, 523.25, 440.00, 392.00, 440.00, 523.25,
+      493.88, 392.00, 329.63, 392.00, 440.00, 493.88, 523.25, 587.33
+    ];
+
+    var openingBassSequence = [
+      146.83, 0, 0, 0, 146.83, 0, 0, 0,
+      130.81, 0, 0, 0, 130.81, 0, 0, 0,
+      116.54, 0, 174.61, 0, 110.00, 0, 164.81, 0,
+      130.81, 0, 196.00, 0, 146.83, 0, 220.00, 0
+    ];
+
+    // 各ターンBGM：ベース固定＋メロディランダム生成用の定義
+    var turnMelodyConfigs = {
       calm: {
         intervalMs: 420,
-        notes: [
-          261.63, 329.63, 392.00, 493.88,
-          220.00, 261.63, 329.63, 392.00,
-          174.61, 220.00, 261.63, 349.23,
-          196.00, 246.94, 293.66, 392.00
+        bassNotes: [
+          130.81, 0, 196.00, 0,
+          110.00, 0, 164.81, 0,
+          87.31, 0, 130.81, 0,
+          98.00, 0, 146.83, 0
         ],
-        type: 'sine',
-        gain: 0.075,
-        dur: 0.55,
-        filter: 1700
+        melodyPool: [261.63, 293.66, 329.63, 392.00, 440.00, 493.88, 523.25, 0],
+        melodyType: 'sine',
+        bassType: 'sine',
+        melodyGain: 0.072,
+        bassGain: 0.055,
+        melodyDur: 0.52,
+        bassDur: 0.85,
+        filter: 1800
       },
       suspense: {
         intervalMs: 360,
-        notes: [
-          220.00, 0, 261.63, 277.18,
-          220.00, 207.65, 0, 196.00,
-          185.00, 0, 220.00, 233.08,
-          164.81, 196.00, 207.65, 0
+        bassNotes: [
+          110.00, 0, 110.00, 0,
+          103.83, 0, 98.00, 0,
+          92.50, 0, 92.50, 0,
+          82.41, 0, 103.83, 0
         ],
-        type: 'triangle',
-        gain: 0.082,
-        dur: 0.42,
-        filter: 1200
+        melodyPool: [220.00, 233.08, 261.63, 277.18, 311.13, 329.63, 392.00, 0],
+        melodyType: 'triangle',
+        bassType: 'sine',
+        melodyGain: 0.08,
+        bassGain: 0.062,
+        melodyDur: 0.40,
+        bassDur: 0.72,
+        filter: 1350
       },
       night: {
-        intervalMs: 480,
-        notes: [
-          65.41, 65.41, 73.42, 65.41,
-          61.74, 61.74, 65.41, 55.00,
-          58.27, 58.27, 65.41, 58.27,
-          55.00, 61.74, 55.00, 49.00
+        intervalMs: 460,
+        bassNotes: [
+          65.41, 0, 65.41, 73.42,
+          61.74, 0, 55.00, 0,
+          58.27, 0, 58.27, 65.41,
+          55.00, 0, 49.00, 0
         ],
-        type: 'sawtooth',
-        gain: 0.088,
-        dur: 0.65,
-        filter: 420
+        melodyPool: [130.81, 138.59, 155.56, 164.81, 185.00, 196.00, 220.00, 0],
+        melodyType: 'triangle',
+        bassType: 'sawtooth',
+        melodyGain: 0.065,
+        bassGain: 0.085,
+        melodyDur: 0.55,
+        bassDur: 0.85,
+        filter: 620
       },
       victory: {
         intervalMs: 390,
-        notes: [
-          261.63, 329.63, 392.00, 523.25,
-          493.88, 392.00, 329.63, 392.00,
-          349.23, 440.00, 523.25, 440.00,
-          392.00, 329.63, 293.66, 392.00
+        bassNotes: [
+          130.81, 0, 196.00, 0,
+          174.61, 0, 220.00, 0,
+          196.00, 0, 246.94, 0,
+          130.81, 0, 196.00, 0
         ],
-        type: 'sine',
-        gain: 0.08,
-        dur: 0.52,
-        filter: 2100
+        melodyPool: [261.63, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25],
+        melodyType: 'triangle',
+        bassType: 'sine',
+        melodyGain: 0.082,
+        bassGain: 0.058,
+        melodyDur: 0.48,
+        bassDur: 0.80,
+        filter: 2200
       },
       defeat: {
-        intervalMs: 520,
-        notes: [
-          110.00, 0, 103.83, 0,
-          98.00, 0, 82.41, 0,
-          87.31, 0, 82.41, 0,
-          73.42, 0, 65.41, 0
+        intervalMs: 500,
+        bassNotes: [
+          65.41, 0, 0, 0,
+          61.74, 0, 0, 0,
+          55.00, 0, 0, 0,
+          49.00, 0, 49.00, 0
         ],
-        type: 'triangle',
-        gain: 0.082,
-        dur: 0.7,
-        filter: 720
+        melodyPool: [130.81, 123.47, 110.00, 103.83, 98.00, 87.31, 0],
+        melodyType: 'sawtooth',
+        bassType: 'sine',
+        melodyGain: 0.068,
+        bassGain: 0.075,
+        melodyDur: 0.65,
+        bassDur: 1.10,
+        filter: 680
+      },
+      // 「恐怖と絶望」：逃げ場のない恐怖と緊張、絶望のテーマ
+      despair: {
+        intervalMs: 340,
+        bassNotes: [
+          55.00, 55.00, 51.91, 55.00,
+          49.00, 49.00, 46.25, 49.00,
+          43.65, 43.65, 41.20, 43.65,
+          36.71, 36.71, 32.70, 32.70
+        ],
+        melodyPool: [220.00, 233.08, 277.18, 293.66, 311.13, 369.99, 415.30, 440.00],
+        melodyType: 'sawtooth',
+        bassType: 'sawtooth',
+        melodyGain: 0.072,
+        bassGain: 0.095,
+        melodyDur: 0.42,
+        bassDur: 0.55,
+        filter: 780
       }
     };
+
+    var bgmPatterns = {
+      opening: { intervalMs: 540 },
+      calm: { intervalMs: turnMelodyConfigs.calm.intervalMs },
+      suspense: { intervalMs: turnMelodyConfigs.suspense.intervalMs },
+      night: { intervalMs: turnMelodyConfigs.night.intervalMs },
+      victory: { intervalMs: turnMelodyConfigs.victory.intervalMs },
+      defeat: { intervalMs: turnMelodyConfigs.defeat.intervalMs },
+      despair: { intervalMs: turnMelodyConfigs.despair.intervalMs }
+    };
+
+    function pickRandomMelodyNote(pool, prevFreq) {
+      if (!pool || pool.length === 0) return 0;
+      if (pool.length === 1) return pool[0];
+      var note = pool[Math.floor(Math.random() * pool.length)];
+      if (note === prevFreq && Math.random() < 0.65) {
+        note = pool[(pool.indexOf(note) + 1) % pool.length];
+      }
+      return note;
+    }
 
     function startBgmLoop() {
       if (bgmTimerId !== null) {
@@ -781,22 +844,67 @@
       }
       if (!bgmEnabled) return;
 
-      var pat = bgmPatterns[currentBgmMood] || bgmPatterns.calm;
+      var mood = currentBgmMood;
+      var pat = bgmPatterns[mood] || bgmPatterns.calm;
       bgmStep = 0;
+      var lastMelFreq = 0;
 
       var tick = function() {
         if (!bgmEnabled) return;
-        var p = bgmPatterns[currentBgmMood] || bgmPatterns.calm;
-        var freq = p.notes[bgmStep % p.notes.length];
-        if (freq > 0) {
-          var isOpening = currentBgmMood === 'opening';
-          var atk = isOpening ? 0.14 : 0.025;
-          var rel = isOpening ? p.dur * 1.15 : p.dur * 0.7;
-          playTone(freq, p.dur, p.type, p.gain, atk, rel, p.filter, 0);
-          if (isOpening && bgmStep % 8 === 0) {
-            playTone(freq * 0.5, 1.8, 'sine', 0.055, 0.25, 1.4, 460, 0);
+        var activeMood = currentBgmMood;
+
+        if (activeMood === 'opening') {
+          var idx = bgmStep % openingMelodySequence.length;
+          var isChorus = idx >= 16;
+          var melFreq = openingMelodySequence[idx];
+          var bassFreq = openingBassSequence[idx];
+
+          if (melFreq > 0) {
+            var melType = isChorus ? 'triangle' : 'sine';
+            var melGain = isChorus ? 0.092 : 0.072;
+            var melFilter = isChorus ? 1950 : 1150;
+            playTone(melFreq, isChorus ? 0.68 : 0.85, melType, melGain, 0.04, 0.7, melFilter, 0);
+            if (isChorus) {
+              // サビのハモリ（5度上）で広がりとドラマ感を演出
+              playTone(melFreq * 1.498, 0.55, 'sine', 0.042, 0.06, 0.6, 2200, 0.02);
+            }
+          }
+          if (bassFreq > 0) {
+            var bassGain = isChorus ? 0.085 : 0.058;
+            playTone(bassFreq, isChorus ? 1.35 : 1.5, 'sine', bassGain, 0.08, 1.0, 520, 0);
+          }
+          bgmStep++;
+          return;
+        }
+
+        var cfg = turnMelodyConfigs[activeMood] || turnMelodyConfigs.calm;
+        var bIdx = bgmStep % cfg.bassNotes.length;
+        var fixedBass = cfg.bassNotes[bIdx];
+        var randomMel = pickRandomMelodyNote(cfg.melodyPool, lastMelFreq);
+        lastMelFreq = randomMel;
+
+        if (fixedBass > 0) {
+          playTone(fixedBass, cfg.bassDur, cfg.bassType, cfg.bassGain, 0.03, cfg.bassDur * 0.75, cfg.filter, 0);
+        }
+
+        if (randomMel > 0) {
+          var isDespair = activeMood === 'despair';
+          playTone(
+            randomMel,
+            cfg.melodyDur,
+            cfg.melodyType,
+            cfg.melodyGain,
+            isDespair ? 0.015 : 0.025,
+            isDespair ? 0.35 : 0.55,
+            cfg.filter,
+            0
+          );
+          if (isDespair && bgmStep % 2 === 0) {
+            // 不穏な短2度/トライトーンの響きで逃げ場のない恐怖を強調
+            playTone(randomMel * 1.05946, 0.28, 'sawtooth', 0.038, 0.01, 0.25, 920, 0.03);
           }
         }
+
         bgmStep++;
       };
 
@@ -1843,6 +1951,11 @@
       }
 
       if (wolves >= humans) {
+        var isLastVillagerFall = humans > 0 && day >= 2;
+        if (isLastVillagerFall) {
+          setBgmMood('despair');
+        }
+
         var wolfReason = '';
         if (phase === 'vote') {
           wolfReason = humans === 0
@@ -1863,9 +1976,9 @@
             var victimLabel = lastVictim.title + 'の' + lastVictim.name;
             var wolfLabel = remainingWolf ? (remainingWolf.title + 'の' + remainingWolf.name) : '人狼';
             var finalAttackText = lastVictim.isPlayer
-              ? 'もはや誰も助けてくれる者はいません。正体を現した' + wolfLabel + 'が静かに歩み寄り、最後の生き残りとなった' + victimLabel + 'もまた闇の中で犠牲となりました。'
-              : 'もはや人狼を止められる者は残っていません。正体を現した' + wolfLabel + 'の牙にかかり、最後の生き残りだった' + victimLabel + 'もまた静かに犠牲となりました。';
-            addLog(finalAttackText, 'suspect-msg', '館の灯りが消え、逃げる術を失った背後に鋭い影が迫る。', true, null);
+              ? '扉は閉ざされ、逃げ場はもうどこにもありません。正体を現した' + wolfLabel + 'が冷たい息を吐きながら迫り、最後の村人となった' + victimLabel + 'は絶望の中、闇へと引きずり込まれました。'
+              : '扉は閉ざされ、逃げ場はもうどこにもありません。正体を現した' + wolfLabel + 'が鋭い牙を剥き、最後の村人だった' + victimLabel + 'は絶望の中、闇へと引きずり込まれました。';
+            addLog(finalAttackText, 'suspect-msg', '逃げ場のない館に恐怖と絶望が満ち、灯りが消えた闇から低い唸り声が響く。', true, null);
           });
           updateStatus();
         }
