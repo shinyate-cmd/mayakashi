@@ -2004,4 +2004,168 @@
           var playerIsWolf = aliveWolves.some(function(w) { return w.isPlayer; });
           if (playerIsWolf) {
             clearLog();
-            addLog('===
+            addLog('=== ' + day + '日目の夜フェーズ（襲撃） ===', 'system', '', true, null);
+            addLog('人狼の能力：今夜、誰を襲撃しますか？', 'system', '', true, null);
+            addActionHint('襲撃したい人物のボタンを押してください。');
+            renderButtons(targets, function(target) {
+              clearLog();
+              addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
+              addLog('闇に紛れて' + target.title + 'の' + target.name + ' が襲撃されました。', 'system', '', true, null);
+              if (guardedTargetId === target.id) {
+                addLog('しかし、狩人の護衛によって襲撃は阻まれ、' + target.title + 'の' + target.name + ' は無事に生き延びました！', 'declare-msg', '', true, null);
+              } else {
+                target.alive = false;
+                addLog(formatVictimDiscovery(target), 'system', '', true, null);
+              }
+              day++;
+              updateStatus();
+              if (evaluateGameOutcome('night')) return;
+              addActionHint('「' + day + '日目の昼へ進む」を押してください。');
+              controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
+            });
+            return;
+          } else {
+            clearLog();
+            addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
+            var declaredSeers = targets.filter(function(p) { return p.declaredRole === '占い師'; });
+            var victim = declaredSeers.length > 0 && Math.random() < 0.7
+              ? declaredSeers[0]
+              : targets[Math.floor(Math.random() * targets.length)];
+            if (victim) {
+              if (guardedTargetId === victim.id) {
+                addLog('今夜は人狼が' + victim.title + 'の' + victim.name + 'を襲撃しようとしましたが、狩人の護衛によって犠牲者は出ませんでした！', 'declare-msg', '', true, null);
+              } else {
+                victim.alive = false;
+                addLog(formatVictimDiscovery(victim), 'system', '', true, null);
+              }
+            }
+          }
+        }
+      }
+      day++;
+      updateStatus();
+      if (evaluateGameOutcome('night')) return;
+      addActionHint('「' + day + '日目の昼へ進む」を押してください。');
+      controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
+    }
+
+    function evaluateGameOutcome(phase) {
+      var aliveWolves = players.filter(function(p) { return p.alive && p.role === '人狼'; });
+      var aliveHumans = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
+      var wolves = aliveWolves.length;
+      var humans = aliveHumans.length;
+      var playerIsWolf = players[0] && players[0].role === '人狼';
+
+      if (wolves === 0) {
+        var villageReason = phase === 'vote'
+          ? 'この追放によって、館に潜んでいた【人狼】がいなくなりました（生存者：人狼 0人 ／ 村人側 ' + humans + '人）。'
+          : '館に潜んでいた【人狼】がいなくなりました（生存者：人狼 0人 ／ 村人側 ' + humans + '人）。';
+
+        addLog('【決着】' + villageReason, 'declare-msg', '', true, null);
+
+        pendingEndInfo = {
+          resultMessage: '人狼は追放され、館に平穏が戻りました。【村人陣営の勝利】です。',
+          mood: playerIsWolf ? 'defeat' : 'victory',
+          isPlayerWin: !playerIsWolf
+        };
+        addActionHint('状況を確認したら、「結果発表へ進む」を押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
+        return true;
+      }
+
+      if (wolves >= humans) {
+        var isLastVillagerFall = humans > 0 && day >= 2;
+        if (isLastVillagerFall) {
+          setBgmMood('despair');
+        }
+
+        var wolfReason = '';
+        if (phase === 'vote') {
+          wolfReason = humans === 0
+            ? 'この追放によって生存している村人側がいなくなり、館は【人狼】に制圧されました。'
+            : 'この追放によって生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、もはや人狼を止める術はありません。';
+        } else if (phase === 'night') {
+          wolfReason = 'この襲撃によって生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、もはや人狼を止める術はありません。';
+        } else {
+          wolfReason = '生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、人狼陣営の勝利条件が満たされました。';
+        }
+
+        addLog('【決着】' + wolfReason, 'suspect-msg', '', true, null);
+
+        if (humans > 0) {
+          var remainingWolf = aliveWolves[0];
+          aliveHumans.forEach(function(lastVictim) {
+            lastVictim.alive = false;
+            var victimLabel = lastVictim.title + 'の' + lastVictim.name;
+            var wolfLabel = remainingWolf ? (remainingWolf.title + 'の' + remainingWolf.name) : '人狼';
+            var finalAttackText = lastVictim.isPlayer
+              ? '扉は閉ざされ、逃げ場はもうどこにもありません。正体を現した' + wolfLabel + 'が冷たい息を吐きながら迫り、最後の村人となった' + victimLabel + 'は絶望の中、闇へと引きずり込まれました。'
+              : '扉は閉ざされ、逃げ場はもうどこにもありません。正体を現した' + wolfLabel + 'が鋭い牙を剥き、最後の村人だった' + victimLabel + 'は絶望の中、闇へと引きずり込まれました。';
+            addLog(finalAttackText, 'suspect-msg', '逃げ場のない館に恐怖と絶望が満ち、灯りが消えた闇から低い唸り声が響く。', true, null);
+          });
+          updateStatus();
+        }
+
+        pendingEndInfo = {
+          resultMessage: '生き残った人々は人狼の牙に倒れました。【人狼陣営の勝利】です。',
+          mood: playerIsWolf ? 'victory' : 'defeat',
+          isPlayerWin: playerIsWolf
+        };
+        addActionHint('状況を確認したら、「結果発表へ進む」を押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
+        return true;
+      }
+
+      return false;
+    }
+
+    function proceedToFinalResult() {
+      if (!pendingEndInfo) return;
+      var info = pendingEndInfo;
+      pendingEndInfo = null;
+      endGame(info.resultMessage, info.mood, info.isPlayerWin);
+    }
+
+    function endGame(resultMessage, mood, isPlayerWin) {
+      screenState = 'ended';
+      setBgmMood(mood || 'victory');
+      if (isPlayerWin) {
+        playVictorySe();
+      }
+      clearLog();
+      updateStatus();
+      addLog('=== 結果発表 ===', 'system', '', true, null);
+      addLog(resultMessage, 'system', '', true, null);
+      addLog('--- すべての参加者の正体 ---', 'system', '', true, null);
+      players.forEach(function(p) {
+        addLog(p.title + ' ' + p.name + '：正体は【' + p.role + '】 (' + (p.alive ? '生存' : '脱落') + ')', '', '', true, null);
+      });
+      addActionHint('「オープニング画面に戻る」を押すか、Enterキーを押してください。');
+      returnBannerEl.style.display = 'block';
+      controlsEl.innerHTML = '<button type="button" onclick="returnToOpeningScreen()">オープニング画面に戻る</button>';
+    }
+
+    function renderButtons(targetList, callback, allowBack) {
+      if (allowBack === undefined) allowBack = false;
+      controlsEl.innerHTML = '';
+      targetList.forEach(function(target) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = target.title + ' ' + target.name;
+        btn.onclick = function() { callback(target); };
+        controlsEl.appendChild(btn);
+      });
+      if (allowBack) {
+        var backBtn = document.createElement('button');
+        backBtn.type = 'button';
+        backBtn.className = 'secondary';
+        backBtn.textContent = '戻る';
+        backBtn.onclick = function() { showPlayerDiscussionActions(); };
+        controlsEl.appendChild(backBtn);
+      }
+    }
+
+    updateAudioButtonsUI();
+  </script>
+</body>
+</html>
