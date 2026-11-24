@@ -306,6 +306,7 @@
     var speechEnabled = false;
     var speechRateMode = 'normal';
     var lastVictimSceneIndex = -1;
+    var lastMaleVoteLineIndex = -1;
 
     var bgmEnabled = true;
     var currentBgmMood = 'opening';
@@ -361,6 +362,62 @@
       }
       lastVictimSceneIndex = idx;
       return victimSceneTemplates[idx](label);
+    }
+
+    var maleVoteLineTemplates = [
+      function(targetLabel) {
+        return '「これまでの出来事から推理するに、' + targetLabel + 'が人狼で間違いない。」';
+      },
+      function(targetLabel) {
+        return '「これまでの出来事と発言を照らし合わせれば、' + targetLabel + 'が人狼である可能性が最も高い。」';
+      },
+      function(targetLabel) {
+        return '「どう考えても筋が通らない。' + targetLabel + 'に一票を投じる。」';
+      },
+      function(targetLabel) {
+        return '「迷っている暇はないな。俺は' + targetLabel + 'を人狼と見て投票する。」';
+      }
+    ];
+
+    function pickMaleVoteLine(targetLabel) {
+      var idx = Math.floor(Math.random() * maleVoteLineTemplates.length);
+      if (maleVoteLineTemplates.length > 1 && idx === lastMaleVoteLineIndex) {
+        idx = (idx + 1) % maleVoteLineTemplates.length;
+      }
+      lastMaleVoteLineIndex = idx;
+      return maleVoteLineTemplates[idx](targetLabel);
+    }
+
+    function getBanishedReaction(target) {
+      var isFemale = target.gender === 'female';
+      if (target.role === '人狼') {
+        return {
+          gesture: isFemale
+            ? '顔を歪め、悔しさを滲ませながら後ろへと下がる。'
+            : '苦々しく舌打ちをし、鋭い視線を残して席を立つ。',
+          line: isFemale
+            ? '「くっ……まさかここまで見抜かれていたなんて。覚えてなさいよ！」'
+            : '「ちっ……詰めが甘かったか。だが、この館の闇は簡単には消えんぞ。」'
+        };
+      }
+      if (target.role === '占い師') {
+        return {
+          gesture: isFemale
+            ? '胸に手を当て、悲しげに目を伏せる。'
+            : '深く息を吐き、無念さを押し殺した表情でうなずく。',
+          line: isFemale
+            ? '「そんな……私は本当に占い師なのに。どうか残った皆さんで人狼を見つけて！」'
+            : '「無念だ……俺の言葉が届かなかったか。頼む、残った者たちで人狼を仕留めてくれ。」'
+        };
+      }
+      return {
+        gesture: isFemale
+          ? '戸惑いと悲しみの混じった表情で、周囲を見つめる。'
+          : '肩を落とし、納得のいかない面持ちで一歩退く。',
+        line: isFemale
+          ? '「えっ、私じゃないのに……悔しいけれど、みなさんの無事を祈っています。」'
+          : '「俺じゃない……だが決まってしまった以上、逆らうまい。どうか間違えないでくれよ。」'
+      };
     }
 
     var speechSupported =
@@ -604,7 +661,7 @@
 
       var atk = attack || 0.03;
       var rel = release || Math.max(0.12, duration * 0.85);
-      var maxG = peakGain || 0.06;
+      var maxG = peakGain || 0.095;
 
       gain.gain.setValueAtTime(0.0001, startAt);
       gain.gain.linearRampToValueAtTime(maxG, startAt + atk);
@@ -626,10 +683,10 @@
       if (!bgmEnabled) return;
       ensureAudioContext();
       var fanfare = [
-        { freq: 523.25, dur: 0.13, delay: 0.00, gain: 0.085, type: 'triangle' },
-        { freq: 659.25, dur: 0.13, delay: 0.11, gain: 0.085, type: 'triangle' },
-        { freq: 783.99, dur: 0.15, delay: 0.22, gain: 0.090, type: 'triangle' },
-        { freq: 1046.50, dur: 0.42, delay: 0.34, gain: 0.105, type: 'sine' }
+        { freq: 523.25, dur: 0.13, delay: 0.00, gain: 0.135, type: 'triangle' },
+        { freq: 659.25, dur: 0.13, delay: 0.11, gain: 0.135, type: 'triangle' },
+        { freq: 783.99, dur: 0.15, delay: 0.22, gain: 0.145, type: 'triangle' },
+        { freq: 1046.50, dur: 0.42, delay: 0.34, gain: 0.165, type: 'sine' }
       ];
       fanfare.forEach(function(n) {
         playTone(n.freq, n.dur, n.type, n.gain, 0.015, n.dur * 1.1, 2800, n.delay);
@@ -646,9 +703,9 @@
           110.00, 164.81, 220.00, 277.18, 220.00, 164.81, 246.94, 220.00
         ],
         type: 'sine',
-        gain: 0.042,
+        gain: 0.072,
         dur: 0.95,
-        filter: 920
+        filter: 1050
       },
       calm: {
         intervalMs: 420,
@@ -659,9 +716,9 @@
           196.00, 246.94, 293.66, 392.00
         ],
         type: 'sine',
-        gain: 0.045,
+        gain: 0.075,
         dur: 0.55,
-        filter: 1600
+        filter: 1700
       },
       suspense: {
         intervalMs: 360,
@@ -672,9 +729,9 @@
           164.81, 196.00, 207.65, 0
         ],
         type: 'triangle',
-        gain: 0.05,
+        gain: 0.082,
         dur: 0.42,
-        filter: 1100
+        filter: 1200
       },
       night: {
         intervalMs: 480,
@@ -685,9 +742,9 @@
           55.00, 61.74, 55.00, 49.00
         ],
         type: 'sawtooth',
-        gain: 0.055,
+        gain: 0.088,
         dur: 0.65,
-        filter: 340
+        filter: 420
       },
       victory: {
         intervalMs: 390,
@@ -698,9 +755,9 @@
           392.00, 329.63, 293.66, 392.00
         ],
         type: 'sine',
-        gain: 0.05,
+        gain: 0.08,
         dur: 0.52,
-        filter: 2000
+        filter: 2100
       },
       defeat: {
         intervalMs: 520,
@@ -711,9 +768,9 @@
           73.42, 0, 65.41, 0
         ],
         type: 'triangle',
-        gain: 0.05,
+        gain: 0.082,
         dur: 0.7,
-        filter: 650
+        filter: 720
       }
     };
 
@@ -737,7 +794,7 @@
           var rel = isOpening ? p.dur * 1.15 : p.dur * 0.7;
           playTone(freq, p.dur, p.type, p.gain, atk, rel, p.filter, 0);
           if (isOpening && bgmStep % 8 === 0) {
-            playTone(freq * 0.5, 1.8, 'sine', 0.032, 0.25, 1.4, 420, 0);
+            playTone(freq * 0.5, 1.8, 'sine', 0.055, 0.25, 1.4, 460, 0);
           }
         }
         bgmStep++;
@@ -863,10 +920,14 @@
       };
     }
 
+    function normalizeSpeechPronunciation(text) {
+      return text.replace(/静寂/g, 'せいじゃく');
+    }
+
     function speakText(rawText, speaker) {
       if (!speechEnabled || !speechSupported || !rawText) return;
       try {
-        var cleaned = rawText.replace(/[=\-【】]/g, '').trim();
+        var cleaned = normalizeSpeechPronunciation(rawText.replace(/[=\-【】]/g, '')).trim();
         if (!cleaned) return;
         var profile = computeVoiceProfile(speaker || null);
         var utterance = new SpeechSynthesisUtterance(cleaned);
@@ -1065,6 +1126,7 @@
       clearLog();
       day = 1;
       lastVictimSceneIndex = -1;
+      lastMaleVoteLineIndex = -1;
       suspicionScores = {};
       dayStatements = [];
       pendingVoteTarget = null;
@@ -1575,7 +1637,7 @@
       var targetLabel = target.title + 'の' + target.name;
       var voteSpeech = me.gender === 'female'
         ? '「私は' + targetLabel + 'に投票します。今の状況を考えると、この判断が正しいと思うわ。」'
-        : '「俺は' + targetLabel + 'に投票する。これまでの話から見て、ここが引き際だ。」';
+        : pickMaleVoteLine(targetLabel);
 
       addLog(speakerLabel + voteSpeech, 'suspect-msg', '投票箱の前に進み、静かに決断を口にする。', true, me);
       addActionHint('「投票結果を確認する」を押してください。');
@@ -1656,6 +1718,12 @@
         var onlyExecuted = topCandidates[0];
         addLog('投票の結果（' + maxVotes + '票）、' + onlyExecuted.title + 'の' + onlyExecuted.name + ' が追放されました。', 'system', '', true, null);
       }
+
+      topCandidates.forEach(function(banished) {
+        var reaction = getBanishedReaction(banished);
+        var speakerLabel = '【' + banished.title + ' ' + banished.name + '】';
+        addLog(speakerLabel + reaction.line, 'suspect-msg', reaction.gesture, true, banished);
+      });
 
       if (evaluateGameOutcome('vote')) return;
       addActionHint('「夜フェーズへ進む」を押してください。');
