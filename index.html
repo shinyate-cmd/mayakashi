@@ -693,21 +693,41 @@
       });
     }
 
-    // タイトルBGM：導入の静けさ（0〜15）＋サビの展開（16〜31）
+    // タイトルBGM：起（0〜15）・承（16〜31）・転（32〜47）・結（48〜63）の64ステップ循環
     var openingMelodySequence = [
-      // 導入（静寂と予感）
-      220.00, 261.63, 329.63, 261.63, 220.00, 293.66, 329.63, 261.63,
-      196.00, 246.94, 329.63, 246.94, 196.00, 261.63, 293.66, 261.63,
-      // サビ（閉ざされた館のドラマと高揚）
-      440.00, 523.25, 587.33, 523.25, 440.00, 392.00, 440.00, 523.25,
-      493.88, 392.00, 329.63, 392.00, 440.00, 493.88, 523.25, 587.33
+      // 【起】静かな幕開けと館の気配（0〜15）
+      220.00, 0, 261.63, 0, 329.63, 0, 293.66, 0,
+      220.00, 0, 246.94, 0, 261.63, 0, 0, 0,
+
+      // 【承】思惑と会話が広がる展開（16〜31）
+      293.66, 329.63, 392.00, 329.63, 293.66, 329.63, 440.00, 392.00,
+      329.63, 293.66, 261.63, 293.66, 329.63, 392.00, 440.00, 493.88,
+
+      // 【転】急展開とクライマックス（サビ）の高揚（32〜47）
+      523.25, 587.33, 659.25, 587.33, 523.25, 440.00, 523.25, 587.33,
+      659.25, 587.33, 523.25, 493.88, 440.00, 392.00, 440.00, 493.88,
+
+      // 【結】余韻を残して静まり、次の「起」へつながる着地（48〜63）
+      440.00, 392.00, 329.63, 293.66, 261.63, 293.66, 329.63, 261.63,
+      220.00, 0, 196.00, 0, 220.00, 0, 0, 0
     ];
 
     var openingBassSequence = [
-      146.83, 0, 0, 0, 146.83, 0, 0, 0,
-      130.81, 0, 0, 0, 130.81, 0, 0, 0,
-      116.54, 0, 174.61, 0, 110.00, 0, 164.81, 0,
-      130.81, 0, 196.00, 0, 146.83, 0, 220.00, 0
+      // 【起】
+      110.00, 0, 0, 0, 110.00, 0, 0, 0,
+      98.00, 0, 0, 0, 87.31, 0, 0, 0,
+
+      // 【承】
+      146.83, 0, 146.83, 0, 130.81, 0, 130.81, 0,
+      110.00, 0, 110.00, 0, 98.00, 0, 98.00, 0,
+
+      // 【転】
+      130.81, 0, 196.00, 0, 110.00, 0, 164.81, 0,
+      130.81, 0, 196.00, 0, 146.83, 0, 220.00, 0,
+
+      // 【結】
+      110.00, 0, 146.83, 0, 130.81, 0, 98.00, 0,
+      110.00, 0, 98.00, 0, 110.00, 0, 0, 0
     ];
 
     // 各ターンBGM：ベース固定＋メロディランダム生成用の定義
@@ -797,7 +817,6 @@
         bassDur: 1.10,
         filter: 680
       },
-      // 「恐怖と絶望」：逃げ場のない恐怖と緊張、絶望のテーマ
       despair: {
         intervalMs: 340,
         bassNotes: [
@@ -818,7 +837,7 @@
     };
 
     var bgmPatterns = {
-      opening: { intervalMs: 540 },
+      opening: { intervalMs: 420 },
       calm: { intervalMs: turnMelodyConfigs.calm.intervalMs },
       suspense: { intervalMs: turnMelodyConfigs.suspense.intervalMs },
       night: { intervalMs: turnMelodyConfigs.night.intervalMs },
@@ -855,23 +874,28 @@
 
         if (activeMood === 'opening') {
           var idx = bgmStep % openingMelodySequence.length;
-          var isChorus = idx >= 16;
+          // 0..15: 起 / 16..31: 承 / 32..47: 転（サビ） / 48..63: 結
+          var isDevelopment = idx >= 16 && idx < 32;
+          var isClimax = idx >= 32 && idx < 48;
+          var isEnding = idx >= 48;
+
           var melFreq = openingMelodySequence[idx];
           var bassFreq = openingBassSequence[idx];
 
           if (melFreq > 0) {
-            var melType = isChorus ? 'triangle' : 'sine';
-            var melGain = isChorus ? 0.092 : 0.072;
-            var melFilter = isChorus ? 1950 : 1150;
-            playTone(melFreq, isChorus ? 0.68 : 0.85, melType, melGain, 0.04, 0.7, melFilter, 0);
-            if (isChorus) {
-              // サビのハモリ（5度上）で広がりとドラマ感を演出
-              playTone(melFreq * 1.498, 0.55, 'sine', 0.042, 0.06, 0.6, 2200, 0.02);
+            var melType = isClimax ? 'triangle' : (isDevelopment ? 'triangle' : 'sine');
+            var melGain = isClimax ? 0.095 : (isDevelopment ? 0.082 : (isEnding ? 0.068 : 0.065));
+            var melFilter = isClimax ? 2100 : (isDevelopment ? 1650 : 1100);
+            var melDur = isEnding ? 0.85 : (isClimax ? 0.56 : 0.62);
+
+            playTone(melFreq, melDur, melType, melGain, 0.03, melDur * 0.85, melFilter, 0);
+            if (isClimax) {
+              playTone(melFreq * 1.498, 0.48, 'sine', 0.044, 0.04, 0.55, 2300, 0.02);
             }
           }
           if (bassFreq > 0) {
-            var bassGain = isChorus ? 0.085 : 0.058;
-            playTone(bassFreq, isChorus ? 1.35 : 1.5, 'sine', bassGain, 0.08, 1.0, 520, 0);
+            var bassGain = isClimax ? 0.088 : (isDevelopment ? 0.072 : 0.058);
+            playTone(bassFreq, 1.1, 'sine', bassGain, 0.06, 0.9, 540, 0);
           }
           bgmStep++;
           return;
@@ -900,7 +924,6 @@
             0
           );
           if (isDespair && bgmStep % 2 === 0) {
-            // 不穏な短2度/トライトーンの響きで逃げ場のない恐怖を強調
             playTone(randomMel * 1.05946, 0.28, 'sawtooth', 0.038, 0.01, 0.25, 920, 0.03);
           }
         }
