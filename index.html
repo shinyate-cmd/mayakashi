@@ -296,6 +296,7 @@
   </div>
 
   <script>
+    var TOTAL_PLAYERS = 7;
     var screenState = 'opening';
     var players = [];
     var day = 1;
@@ -303,6 +304,7 @@
     var dayStatements = [];
     var pendingVoteTarget = null;
     var pendingEndInfo = null;
+    var lastGuardedTargetId = null;
     var speechEnabled = false;
     var speechRateMode = 'normal';
     var lastVictimSceneIndex = -1;
@@ -410,6 +412,16 @@
             : '「無念だ……俺の言葉が届かなかったか。頼む、残った者たちで人狼を仕留めてくれ。」'
         };
       }
+      if (target.role === '狩人') {
+        return {
+          gesture: isFemale
+            ? '静かに弓矢の手を止め、無念の表情で周囲を見渡す。'
+            : '深く息をつき、守れなくなる仲間を案じながら席を立つ。',
+          line: isFemale
+            ? '「私が追放されたら、夜に誰かを守れなくなってしまうわ……どうか気をつけて！」'
+            : '「俺がいなくなれば、夜の護衛が途切れる……頼む、昼のうちに人狼を突き止めてくれ。」'
+        };
+      }
       return {
         gesture: isFemale
           ? '戸惑いと悲しみの混じった表情で、周囲を見つめる。'
@@ -455,7 +467,9 @@
       { name: 'ジル', gender: 'female', age: 'elder' },
       { name: 'クロエ', gender: 'female', age: 'middle' },
       { name: 'シオン', gender: 'male', age: 'youth' },
-      { name: 'レイ', gender: 'female', age: 'middle' }
+      { name: 'レイ', gender: 'female', age: 'middle' },
+      { name: 'ハナ', gender: 'female', age: 'youth' },
+      { name: 'コウタ', gender: 'male', age: 'youth' }
     ];
 
     var jobPool = [
@@ -486,6 +500,7 @@
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'だ。事実と筋道を見極めながら、この状況を整理したい。」'; },
             suspectLine: function(target) { return '「感情論は抜きにしよう。状況を見る限り、' + target + 'の言動には不自然な点が多い。」'; },
             declareLine: function() { return '「混乱を避けるために名乗り出よう。私が本物の【占い師】だ。」'; },
+            declareHunterLine: function() { return '「夜の備えとして明かしておこう。私が【狩人】だ。」'; },
             reportWolf: function(target) { return '「昨晩の占いの結果を報告する。' + target + 'は【人狼】だった。これで議論の軸は決まったな。」'; },
             reportHuman: function(target) { return '「昨晩は' + target + 'を占った。結果は【村人（白）】だ。少なくとも彼は信用していい。」'; }
           },
@@ -493,6 +508,7 @@
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'です。感情に流されず、冷静に手がかりを整理していきましょう。」'; },
             suspectLine: function(target) { return '「落ち着いて考えてみましょう。' + target + 'の発言には、筋が通らない点がいくつかあります。」'; },
             declareLine: function() { return '「これ以上の混乱を防ぐために名乗り出ます。私が本物の【占い師】です。」'; },
+            declareHunterLine: function() { return '「今夜の護衛に備えてお伝えします。私が【狩人】です。」'; },
             reportWolf: function(target) { return '「昨晩の占い結果をお伝えします。' + target + 'は【人狼】でした。慎重に判断しましょう。」'; },
             reportHuman: function(target) { return '「昨晩は' + target + 'を占いました。結果は【村人（白）】です。今のところは信頼できますね。」'; }
           }
@@ -512,6 +528,7 @@
             introLine: function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と言います。吹雪が怖いですけど、皆さんと協力したいです。」'; },
             suspectLine: function(target) { return '「あ、あの、こんなこと言いたくないんですけど、' + target + 'さんが少し怖くて。」'; },
             declareLine: function() { return '「わ、僕なんです。本当は黙っていたかったけど、僕が【占い師】なんです。」'; },
+            declareHunterLine: function() { return '「あ、あの……実は僕、【狩人】なんです。みんなを少しでも守りたいです。」'; },
             reportWolf: function(target) { return '「ひっ。昨晩、' + target + 'さんを占ったら、【人狼】って出たんです。本当です。」'; },
             reportHuman: function(target) { return '「よ、よかった。昨晩' + target + 'さんを占ったら、【村人】でした。」'; }
           },
@@ -519,6 +536,7 @@
             introLine: function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と申します。怖いことが起きませんように……よろしくお願いします。」'; },
             suspectLine: function(target) { return '「ご、ごめんなさい。こんなこと言いたくないんですけど、' + target + 'さんの様子が少し気になって……」'; },
             declareLine: function() { return '「わ、私なんです。本当は隠していたかったんですけど、私が【占い師】なんです。」'; },
+            declareHunterLine: function() { return '「ご、ごめんなさい……実は私、【狩人】なんです。夜もちゃんと守りますね。」'; },
             reportWolf: function(target) { return '「ひっ……昨晩、' + target + 'さんを占ったら、【人狼】って出てしまったんです。」'; },
             reportHuman: function(target) { return '「よ、よかった……昨晩' + target + 'さんを占ったら、【村人】でした。」'; }
           }
@@ -538,6 +556,7 @@
             introLine: function(p) { return '「俺は' + p.title + 'の' + p.name + 'だ。隠し事をする奴はすぐにわかる、よろしく頼むぜ。」'; },
             suspectLine: function(target) { return '「おい' + target + '。さっきから顔色が悪いぞ。お前が人狼なんだろう、白状しろ。」'; },
             declareLine: function() { return '「隠していても仕方ねぇな。俺が本物の【占い師】だ。文句ある奴は出てこい。」'; },
+            declareHunterLine: function() { return '「よく聞け。俺が【狩人】だ。今夜も誰かの命を張って守ってやる。」'; },
             reportWolf: function(target) { return '「ビンゴだ。昨晩' + target + 'を占ってやったが、こいつが【人狼】で間違いねぇ。」'; },
             reportHuman: function(target) { return '「昨晩は' + target + 'を占ったが、こいつは【村人】だ。俺が保証してやる。」'; }
           },
@@ -545,6 +564,7 @@
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。ごまかしは許さないわ、よろしくね。」'; },
             suspectLine: function(target) { return '「ちょっと' + target + '。さっきから態度がおかしいじゃない。あなたが人狼なんでしょ？」'; },
             declareLine: function() { return '「隠していても始まらないわ。私が本物の【占い師】よ。嘘つきは黙りなさい。」'; },
+            declareHunterLine: function() { return '「はっきり言っておくわね。私が【狩人】よ。夜に襲わせるわけにはいかないわ。」'; },
             reportWolf: function(target) { return '「やっぱりね。昨晩' + target + 'を占ったら、【人狼】って出たわよ。」'; },
             reportHuman: function(target) { return '「昨晩は' + target + 'を占ったわ。結果は【村人】よ、そこは間違いないわね。」'; }
           }
@@ -564,6 +584,7 @@
             introLine: function(p) { return '「僕は' + p.title + 'の' + p.name + 'さ。この館でどんなドラマが起きるか、じっくり見せてもらうよ。」'; },
             suspectLine: function(target) { return '「へぇ、' + target + 'は随分と余裕そうだね。何か後ろめたいことでも隠してるのかな。」'; },
             declareLine: function() { return '「やれやれ、僕が名乗り出るしかないか。実はね、僕が【占い師】なんだよ。」'; },
+            declareHunterLine: function() { return '「物好きな役回りだけどね。実は僕が【狩人】さ。今夜は誰を守ろうかな。」'; },
             reportWolf: function(target) { return '「残念なお知らせだ。昨晩' + target + 'を占ったら、見事に【人狼】と出たよ。」'; },
             reportHuman: function(target) { return '「昨晩' + target + 'を占ってみたけれど、残念ながら【村人】だったよ。面白みがないね。」'; }
           },
@@ -571,6 +592,7 @@
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。この閉ざされた館でどんな化けの皮が剥がれるか、楽しみだわ。」'; },
             suspectLine: function(target) { return '「あら、' + target + 'はずいぶん余裕そうね。何か都合の悪いことでも隠しているのかしら。」'; },
             declareLine: function() { return '「やれやれ、私が名乗り出る番みたいね。実は、私が【占い師】なのよ。」'; },
+            declareHunterLine: function() { return '「割に合わない役目だけどね。実は私が【狩人】なのよ。誰を守ろうかしら。」'; },
             reportWolf: function(target) { return '「困ったわね。昨晩' + target + 'を占ったら、はっきり【人狼】と出たわよ。」'; },
             reportHuman: function(target) { return '「昨晩' + target + 'を占ってみたけれど、意外にも【村人】だったわ。拍子抜けね。」'; }
           }
@@ -693,44 +715,34 @@
       });
     }
 
-    // タイトルBGM：起（0〜15）・承（16〜31）・転（32〜47）・結（48〜63）の64ステップ循環
     var openingMelodySequence = [
-      // 【起】静かな幕開けと館の気配（0〜15）
       220.00, 0, 261.63, 0, 329.63, 0, 293.66, 0,
       220.00, 0, 246.94, 0, 261.63, 0, 0, 0,
 
-      // 【承】思惑と会話が広がる展開（16〜31）
       293.66, 329.63, 392.00, 329.63, 293.66, 329.63, 440.00, 392.00,
       329.63, 293.66, 261.63, 293.66, 329.63, 392.00, 440.00, 493.88,
 
-      // 【転】急展開とクライマックス（サビ）の高揚（32〜47）
       523.25, 587.33, 659.25, 587.33, 523.25, 440.00, 523.25, 587.33,
       659.25, 587.33, 523.25, 493.88, 440.00, 392.00, 440.00, 493.88,
 
-      // 【結】余韻を残して静まり、次の「起」へつながる着地（48〜63）
       440.00, 392.00, 329.63, 293.66, 261.63, 293.66, 329.63, 261.63,
       220.00, 0, 196.00, 0, 220.00, 0, 0, 0
     ];
 
     var openingBassSequence = [
-      // 【起】
       110.00, 0, 0, 0, 110.00, 0, 0, 0,
       98.00, 0, 0, 0, 87.31, 0, 0, 0,
 
-      // 【承】
       146.83, 0, 146.83, 0, 130.81, 0, 130.81, 0,
       110.00, 0, 110.00, 0, 98.00, 0, 98.00, 0,
 
-      // 【転】
       130.81, 0, 196.00, 0, 110.00, 0, 164.81, 0,
       130.81, 0, 196.00, 0, 146.83, 0, 220.00, 0,
 
-      // 【結】
       110.00, 0, 146.83, 0, 130.81, 0, 98.00, 0,
       110.00, 0, 98.00, 0, 110.00, 0, 0, 0
     ];
 
-    // 各ターンBGM：ベース固定＋メロディランダム生成用の定義
     var turnMelodyConfigs = {
       calm: {
         intervalMs: 420,
@@ -874,7 +886,6 @@
 
         if (activeMood === 'opening') {
           var idx = bgmStep % openingMelodySequence.length;
-          // 0..15: 起 / 16..31: 承 / 32..47: 転（サビ） / 48..63: 結
           var isDevelopment = idx >= 16 && idx < 32;
           var isClimax = idx >= 32 && idx < 48;
           var isEnding = idx >= 48;
@@ -1105,6 +1116,7 @@
       stopSpeech();
       screenState = 'opening';
       pendingEndInfo = null;
+      lastGuardedTargetId = null;
       setBgmMood('opening');
       gameScreenEl.style.display = 'none';
       openingScreenEl.style.display = 'block';
@@ -1201,7 +1213,7 @@
     function updateStatus() {
       var aliveCount = players.filter(function(p) { return p.alive; }).length;
       var me = players[0];
-      statusEl.textContent = day + '日目 | 生存者: ' + aliveCount + '人 | ' + me.title + ' ' + me.name + '（役職: ' + me.role + ' / ' + (me.alive ? '生存' : '脱落') + '）';
+      statusEl.textContent = day + '日目 | 生存者: ' + aliveCount + '/' + players.length + '人 | ' + me.title + ' ' + me.name + '（役職: ' + me.role + ' / ' + (me.alive ? '生存' : '脱落') + '）';
       renderRosterPanel();
     }
 
@@ -1214,7 +1226,7 @@
         li.className = 'roster-item' + (p.alive ? '' : ' dead');
 
         var statusBadge = p.alive ? '【生存】' : '【脱落】';
-        var declareBadge = p.declaredSeer ? ' ※占い師と名乗り出ている' : '';
+        var declareBadge = p.declaredRole ? ' ※' + p.declaredRole + 'と名乗り出ている' : '';
         var roleReveal = screenState === 'ended' ? ' ／ 正体：' + p.role : '';
         var gLabel = (genderConfig[p.gender] && genderConfig[p.gender].label) || '';
         var aLabel = (ageConfig[p.age] && ageConfig[p.age].label) || '';
@@ -1251,6 +1263,17 @@
       return list[Math.floor(Math.random() * list.length)];
     }
 
+    // 7人制：人狼1名・占い師1名・狩人1名・村人4名
+    function buildRoleDeckForCount(count) {
+      var base = ['人狼', '占い師', '狩人', '村人', '村人', '村人', '村人'];
+      if (count > base.length) {
+        while (base.length < count) {
+          base.push('村人');
+        }
+      }
+      return shuffleArray(base.slice(0, count));
+    }
+
     function prepareTutorialChoice() {
       ensureAudioContext();
       setBgmMood('calm');
@@ -1258,6 +1281,7 @@
       day = 1;
       lastVictimSceneIndex = -1;
       lastMaleVoteLineIndex = -1;
+      lastGuardedTargetId = null;
       suspicionScores = {};
       dayStatements = [];
       pendingVoteTarget = null;
@@ -1277,9 +1301,9 @@
 
       setupAreaEl.style.display = 'none';
 
-      var roles = shuffleArray(['人狼', '占い師', '村人', '村人', '村人']);
+      var roles = buildRoleDeckForCount(TOTAL_PLAYERS);
       var availableProfiles = npcProfiles.filter(function(prof) { return prof.name !== playerName; });
-      var selectedProfiles = shuffleArray(availableProfiles).slice(0, 4);
+      var selectedProfiles = shuffleArray(availableProfiles).slice(0, TOTAL_PLAYERS - 1);
       var personalityKeys = Object.keys(personalities);
 
       var meObj = {
@@ -1294,12 +1318,12 @@
         isPlayer: true,
         personality: null,
         voiceProfile: createFixedVoiceProfile(playerGender, playerAge, null, 0),
-        declaredSeer: false,
+        declaredRole: null,
         lastSeerResult: null
       };
 
       var npcObjs = selectedProfiles.map(function(prof, idx) {
-        var job = shuffledJobs[idx + 1];
+        var job = shuffledJobs[(idx + 1) % shuffledJobs.length];
         var pKey = personalityKeys[Math.floor(Math.random() * personalityKeys.length)];
         var pObj = personalities[pKey];
         return {
@@ -1314,13 +1338,13 @@
           isPlayer: false,
           personality: pObj,
           voiceProfile: createFixedVoiceProfile(prof.gender, prof.age, pObj, idx + 1),
-          declaredSeer: false,
+          declaredRole: null,
           lastSeerResult: null
         };
       });
 
       players = [meObj].concat(npcObjs);
-      statusEl.textContent = '準備完了 | ' + playerName + '（' + playerJob.title + '）';
+      statusEl.textContent = '準備完了（全' + players.length + '名）| ' + playerName + '（' + playerJob.title + '）';
 
       addLog('ゲームの操作説明を聞きますか？', 'system');
       addActionHint('「はい」または「いいえ」を押してください。');
@@ -1332,11 +1356,11 @@
     function showTutorialAndStart() {
       clearLog();
       var guideText =
-        '【「マヤカシ」の進め方】\n' +
-        '1. 参加者5人の中に1人だけ【人狼】が紛れています。\n' +
+        '【「マヤカシ」の進め方（全' + TOTAL_PLAYERS + '名・人狼1名／占い師1名／狩人1名／村人4名）】\n' +
+        '1. 参加者' + TOTAL_PLAYERS + '人の中に1人だけ【人狼】が紛れ、占い師・狩人・村人がそれぞれの役目を担います。\n' +
         '2. 【昼】はみんなの言葉や役職の宣言を聞き、怪しいと思う人に投票して追放します（同票の最多得票者が複数いる場合は全員追放されます）。\n' +
-        '3. 【夜】は占い師が1人の正体を調べ、人狼が1人を襲撃します。\n' +
-        '4. 人狼を全員追放すれば【村人陣営の勝利】、生存する人狼と村人の数が同じになると【人狼陣営の勝利】です。';
+        '3. 【夜】は占い師が1人の正体を調べ、狩人が1人を護衛し、人狼が1人を襲撃します（護衛された人は襲撃から守られます）。\n' +
+        '4. 勝敗が決するまで3日目以降も昼と夜が続き、人狼を追放すれば【村人陣営の勝利】、生存する人狼と村人側の数が同じになると【人狼陣営の勝利】です。';
       addLog(guideText, 'guide-msg');
       addActionHint('「説明を読んでゲームを始める」を押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="beginMainGame()">説明を読んでゲームを始める</button>';
@@ -1345,9 +1369,9 @@
     function beginMainGame() {
       setBgmMood('calm');
       clearLog();
-      addLog('『マヤカシ』 - 吹雪によって外界と閉ざされた古い館。この5人の中に、夜な夜な人を襲う【人狼】が1人紛れ込んでいる。', 'system', '', true, null);
+      addLog('『マヤカシ』 - 吹雪によって外界と閉ざされた古い館。この' + players.length + '人の中に、夜な夜な人を襲う【人狼】が1人紛れ込んでいる。', 'system', '', true, null);
       var memberSummary = players.map(function(p) { return p.title + 'の' + p.name; }).join('、');
-      addLog('参加者：' + memberSummary, 'system', '', true, null);
+      addLog('参加者（' + players.length + '名）：' + memberSummary, 'system', '', true, null);
       addLog(players[0].title + ' ' + players[0].name + ' の裏の顔（役職）は【' + players[0].role + '】です。（画面下部の参加者名簿で全員の背景を確認できます）', 'system', '', true, null);
       addActionHint('「全員の自己紹介へ進む」を押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="startIntroductions()">全員の自己紹介へ進む</button>';
@@ -1357,8 +1381,8 @@
     function startIntroductions() {
       setBgmMood('calm');
       clearLog();
-      addLog('=== 全員集合：自己紹介 ===', 'system', '', true, null);
-      addLog('暖炉の火を囲み、集まった5人が順番に名乗りを上げます。それぞれの声色や話し方に耳を傾けてください。', 'system', '', true, null);
+      addLog('=== 全員集合：自己紹介（' + players.length + '名） ===', 'system', '', true, null);
+      addLog('暖炉の火を囲み、集まった' + players.length + '人が順番に名乗りを上げます。それぞれの声色や話し方に耳を傾けてください。', 'system', '', true, null);
 
       players.forEach(function(p) {
         var speakerLabel = '【' + p.title + ' ' + p.name + '】';
@@ -1406,15 +1430,19 @@
         var gesture = getRandomGesture(npc);
         var speakerLabel = '【' + npc.title + ' ' + npc.name + '】';
 
-        if (npc.role === '占い師' && !npc.declaredSeer && (day === 1 || Math.random() < 0.8)) {
-          npc.declaredSeer = true;
+        if (npc.role === '占い師' && !npc.declaredRole && (day === 1 || Math.random() < 0.8)) {
+          npc.declaredRole = '占い師';
           addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'declareLine'), 'declare-msg', gesture, true, npc);
-        } else if (npc.role === '人狼' && !npc.declaredSeer && day <= 2 && Math.random() < 0.45) {
-          npc.declaredSeer = true;
+        } else if (npc.role === '狩人' && !npc.declaredRole && day >= 2 && Math.random() < 0.55) {
+          npc.declaredRole = '狩人';
+          addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'declareHunterLine'), 'declare-msg', gesture, true, npc);
+          suspicionScores[npc.id] -= 1.0;
+        } else if (npc.role === '人狼' && !npc.declaredRole && day <= 2 && Math.random() < 0.45) {
+          npc.declaredRole = '占い師';
           addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'declareLine'), 'declare-msg', gesture, true, npc);
         }
 
-        if (npc.declaredSeer) {
+        if (npc.declaredRole === '占い師') {
           if (npc.role === '占い師' && npc.lastSeerResult) {
             var target = players.find(function(p) { return p.id === npc.lastSeerResult.targetId; });
             if (target) {
@@ -1427,7 +1455,7 @@
                 speaker: npc,
                 kind: npc.lastSeerResult.isWolf ? 'reportWolf' : 'reportHuman',
                 target: target,
-                summary: npc.title + ' ' + npc.name + 'の占い報告（' + targetLabel + 'は' + (npc.lastSeerResult.isWolf ? '人狼' : '村人') + '）'
+                summary: npc.title + ' ' + npc.name + 'の占い報告（' + targetLabel + 'は' + (npc.lastSeerResult.isWolf ? '人狼' : '村人側') + '）'
               });
               if (npc.lastSeerResult.isWolf) suspicionScores[target.id] += 4;
               else suspicionScores[target.id] -= 2;
@@ -1446,7 +1474,7 @@
                 speaker: npc,
                 kind: fakeIsWolf ? 'reportWolf' : 'reportHuman',
                 target: fakeTarget,
-                summary: npc.title + ' ' + npc.name + 'の占い報告（' + fTargetLabel + 'は' + (fakeIsWolf ? '人狼' : '村人') + '）'
+                summary: npc.title + ' ' + npc.name + 'の占い報告（' + fTargetLabel + 'は' + (fakeIsWolf ? '人狼' : '村人側') + '）'
               });
               if (fakeIsWolf) suspicionScores[fakeTarget.id] += 3;
             }
@@ -1454,7 +1482,7 @@
         }
       });
 
-      var declaredSeers = aliveAll.filter(function(p) { return p.declaredSeer; });
+      var declaredSeers = aliveAll.filter(function(p) { return p.declaredRole === '占い師'; });
       if (declaredSeers.length >= 2) {
         addLog('（占い師と名乗る人が' + declaredSeers.length + '人います。どちらかが嘘をついています）', 'system', '', true, null);
         declaredSeers.forEach(function(s) { suspicionScores[s.id] += 1.5; });
@@ -1479,7 +1507,7 @@
           });
           suspicionScores[scapegoat.id] += 1.5;
         } else {
-          if (declaredSeers.length >= 2 && !npc.declaredSeer) {
+          if (declaredSeers.length >= 2 && npc.declaredRole !== '占い師') {
             var suspectSeer = declaredSeers[Math.floor(Math.random() * declaredSeers.length)];
             addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'suspectLine', suspectSeer.title + 'の' + suspectSeer.name), 'suspect-msg', gesture, true, npc);
             dayStatements.push({
@@ -1517,7 +1545,7 @@
       var me = players[0];
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
       addLog('--- ' + me.name + 'の発言ターン（投票前の駆け引き） ---', 'system', '', true, null);
-      addActionHint('「誰かを怪しいと指摘する」「意見に賛同・反論する」「占い師と名乗り出る」「様子を見る」から選んでください。');
+      addActionHint('「誰かを怪しいと指摘する」「意見に賛同・反論する」「役職を名乗り出る」「様子を見る」から選んでください。');
       controlsEl.innerHTML = '';
 
       var btnSuspect = document.createElement('button');
@@ -1563,39 +1591,53 @@
         controlsEl.appendChild(btnDisagree);
       }
 
-      if (!me.declaredSeer) {
+      if (!me.declaredRole) {
         var btnDeclare = document.createElement('button');
         btnDeclare.type = 'button';
         btnDeclare.className = 'declare-btn';
-        btnDeclare.textContent = me.role === '占い師'
-          ? '【占い師】と名乗り出る'
-          : '嘘をついて【占い師】と名乗り出る';
+        if (me.role === '占い師') {
+          btnDeclare.textContent = '【占い師】と名乗り出る';
+        } else if (me.role === '狩人') {
+          btnDeclare.textContent = '【狩人】と名乗り出る';
+        } else {
+          btnDeclare.textContent = '嘘をついて【占い師】と名乗り出る';
+        }
         btnDeclare.onclick = function() {
-          me.declaredSeer = true;
+          var claimRole = me.role === '狩人' ? '狩人' : '占い師';
+          me.declaredRole = claimRole;
           renderRosterPanel();
-          var line = me.gender === 'female'
-            ? '「私が本物の【占い師】です。嘘をついている方がいるなら今すぐ名乗り出てください。」'
-            : '「私が本物の【占い師】だ。嘘をついている者がいるなら今すぐ名乗り出ろ。」';
+          var line = '';
+          if (claimRole === '狩人') {
+            line = me.gender === 'female'
+              ? '「私が【狩人】です。夜に襲われる人が出ないよう、全力で守ります。」'
+              : '「俺が【狩人】だ。夜に襲われる人が出ないよう、しっかり守り抜く。」';
+          } else {
+            line = me.gender === 'female'
+              ? '「私が本物の【占い師】です。嘘をついている方がいるなら今すぐ名乗り出てください。」'
+              : '「私が本物の【占い師】だ。嘘をついている者がいるなら今すぐ名乗り出ろ。」';
+          }
           addLog(speakerLabel + line, 'declare-msg', '一歩前に出て、堂々と宣言する。', true, me);
-          players.filter(function(p) { return p.alive && !p.isPlayer && p.declaredSeer; }).forEach(function(rival) {
-            suspicionScores[rival.id] += 2.0;
-          });
-          if (me.role === '占い師' && me.lastSeerResult) {
-            var t = players.find(function(p) { return p.id === me.lastSeerResult.targetId; });
-            if (t) {
-              var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人（白）】';
-              addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
-              if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
-              else suspicionScores[t.id] -= 2.5;
+          if (claimRole === '占い師') {
+            players.filter(function(p) { return p.alive && !p.isPlayer && p.declaredRole === '占い師'; }).forEach(function(rival) {
+              suspicionScores[rival.id] += 2.0;
+            });
+            if (me.role === '占い師' && me.lastSeerResult) {
+              var t = players.find(function(p) { return p.id === me.lastSeerResult.targetId; });
+              if (t) {
+                var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人側（白）】';
+                addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
+                if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
+                else suspicionScores[t.id] -= 2.5;
+              }
+            } else if (me.role !== '占い師' && day >= 2) {
+              askFakeSeerReport();
+              return;
             }
-          } else if (me.role !== '占い師' && day >= 2) {
-            askFakeSeerReport();
-            return;
           }
           startVotePhase();
         };
         controlsEl.appendChild(btnDeclare);
-      } else {
+      } else if (me.declaredRole === '占い師') {
         var btnReport = document.createElement('button');
         btnReport.type = 'button';
         btnReport.className = 'declare-btn';
@@ -1604,7 +1646,7 @@
           if (me.role === '占い師' && me.lastSeerResult) {
             var t = players.find(function(p) { return p.id === me.lastSeerResult.targetId; });
             if (t) {
-              var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人（白）】';
+              var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人側（白）】';
               addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
               if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
               else suspicionScores[t.id] -= 2.5;
@@ -1716,7 +1758,7 @@
         function(target) {
           controlsEl.innerHTML = '';
           addLog(target.title + 'の' + target.name + 'について、どちらの嘘を報告しますか？', 'system', '', true, null);
-          addActionHint('「人狼だと嘘をつく」または「村人だと嘘をつく」を押してください。');
+          addActionHint('「人狼だと嘘をつく」または「村人側だと嘘をつく」を押してください。');
           var btnWolf = document.createElement('button');
           btnWolf.type = 'button';
           btnWolf.textContent = target.title + 'の' + target.name + 'は【人狼】だと嘘をつく';
@@ -1728,9 +1770,9 @@
           var btnHuman = document.createElement('button');
           btnHuman.type = 'button';
           btnHuman.className = 'secondary';
-          btnHuman.textContent = target.title + 'の' + target.name + 'は【村人】だと嘘をつく';
+          btnHuman.textContent = target.title + 'の' + target.name + 'は【村人側】だと嘘をつく';
           btnHuman.onclick = function() {
-            addLog(speakerLabel + '「昨晩、' + target.title + 'の' + target.name + 'を占った結果、【村人（白）】でした。」', 'declare-msg', '', true, me);
+            addLog(speakerLabel + '「昨晩、' + target.title + 'の' + target.name + 'を占った結果、【村人側（白）】でした。」', 'declare-msg', '', true, me);
             suspicionScores[target.id] -= 2.0;
             startVotePhase();
           };
@@ -1868,14 +1910,14 @@
       addLog('=== ' + day + '日目の夜フェーズ ===', 'system', '', true, null);
       var me = players[0];
 
-      var npcSeer = players.find(function(p) { return p.alive && !p.isPlayer && p.role === '占い師'; });
-      if (npcSeer) {
+      var npcSeers = players.filter(function(p) { return p.alive && !p.isPlayer && p.role === '占い師'; });
+      npcSeers.forEach(function(npcSeer) {
         var targets = players.filter(function(p) { return p.alive && p.id !== npcSeer.id; });
         if (targets.length > 0) {
           var target = targets[Math.floor(Math.random() * targets.length)];
           npcSeer.lastSeerResult = { targetId: target.id, isWolf: target.role === '人狼' };
         }
-      }
+      });
 
       if (me.alive && me.role === '占い師') {
         var seerTargets = players.filter(function(p) { return p.alive && !p.isPlayer; });
@@ -1891,8 +1933,33 @@
               me.lastSeerResult = { targetId: target.id, isWolf: isWolf };
               var result = isWolf ? '【人狼】' : '【人狼ではない】';
               addLog('占いの結果、' + target.title + 'の' + target.name + ' は ' + result + ' でした。（翌日の議論で報告できます）', 'declare-msg', '', true, null);
+              addActionHint('「狩人の護衛・夜の出来事へ進む」を押してください。');
+              controlsEl.innerHTML = '<button type="button" onclick="runHunterAndWolfNight(null)">狩人の護衛・夜の出来事へ進む</button>';
+            }
+          );
+          return;
+        }
+      }
+
+      if (me.alive && me.role === '狩人') {
+        var guardTargets = players.filter(function(p) {
+          return p.alive && p.id !== me.id && p.id !== lastGuardedTargetId;
+        });
+        if (guardTargets.length === 0) {
+          guardTargets = players.filter(function(p) { return p.alive && p.id !== me.id; });
+        }
+        if (guardTargets.length > 0) {
+          addLog('狩人の能力：今夜、誰を人狼の襲撃から守りますか？（連続で同じ人は守れません）', 'system', '', true, null);
+          addActionHint('護衛したい人物のボタンを押してください。');
+          renderButtons(
+            guardTargets,
+            function(target) {
+              lastGuardedTargetId = target.id;
+              clearLog();
+              addLog('=== ' + day + '日目の夜フェーズ（護衛設定） ===', 'system', '', true, null);
+              addLog('あなたは静かに身を潜め、' + target.title + 'の' + target.name + ' を今夜の護衛対象に選びました。', 'declare-msg', '', true, null);
               addActionHint('「夜の出来事へ進む」を押してください。');
-              controlsEl.innerHTML = '<button type="button" onclick="wolfAttack()">夜の出来事へ進む</button>';
+              controlsEl.innerHTML = '<button type="button" onclick="runHunterAndWolfNight(' + target.id + ')">夜の出来事へ進む</button>';
             }
           );
           return;
@@ -1901,171 +1968,40 @@
 
       addLog('静まり返った館の中で、それぞれの夜が更けていく。', 'system', '', true, null);
       addActionHint('「夜の出来事へ進む」を押してください。');
-      controlsEl.innerHTML = '<button type="button" onclick="wolfAttack()">夜の出来事へ進む</button>';
+      controlsEl.innerHTML = '<button type="button" onclick="runHunterAndWolfNight(null)">夜の出来事へ進む</button>';
     }
 
-    function wolfAttack() {
+    function runHunterAndWolfNight(playerGuardedId) {
       setBgmMood('night');
-      var wolf = players.find(function(p) { return p.alive && p.role === '人狼'; });
-      if (wolf) {
-        var targets = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
-        if (targets.length > 0) {
-          if (wolf.isPlayer) {
-            clearLog();
-            addLog('=== ' + day + '日目の夜フェーズ（襲撃） ===', 'system', '', true, null);
-            addLog('人狼の能力：今夜、誰を襲撃しますか？', 'system', '', true, null);
-            addActionHint('襲撃したい人物のボタンを押してください。');
-            renderButtons(targets, function(target) {
-              target.alive = false;
-              clearLog();
-              addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
-              addLog('あなたは静かに闇へ紛れ、' + target.title + 'の' + target.name + ' を襲撃しました。', 'system', '', true, null);
-              addLog(formatVictimDiscovery(target), 'system', '', true, null);
-              day++;
-              updateStatus();
-              if (evaluateGameOutcome('night')) return;
-              addActionHint('「' + day + '日目の昼へ進む」を押してください。');
-              controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
+      var guardedTargetId = playerGuardedId;
+
+      if (guardedTargetId === null || guardedTargetId === undefined) {
+        var npcHunter = players.find(function(p) { return p.alive && !p.isPlayer && p.role === '狩人'; });
+        if (npcHunter) {
+          var candidates = players.filter(function(p) {
+            return p.alive && p.id !== npcHunter.id && p.id !== lastGuardedTargetId;
+          });
+          if (candidates.length === 0) {
+            candidates = players.filter(function(p) { return p.alive && p.id !== npcHunter.id; });
+          }
+          if (candidates.length > 0) {
+            var declaredKeyRole = candidates.filter(function(p) {
+              return p.declaredRole === '占い師' || p.declaredRole === '狩人';
             });
-            return;
-          } else {
-            clearLog();
-            addLog('=== ' + day + '日目の夜明け ===', 'system', '', true, null);
-            var declaredSeers = targets.filter(function(p) { return p.declaredSeer; });
-            var victim = declaredSeers.length > 0 && Math.random() < 0.7
-              ? declaredSeers[0]
-              : targets[Math.floor(Math.random() * targets.length)];
-            if (victim) {
-              victim.alive = false;
-              addLog(formatVictimDiscovery(victim), 'system', '', true, null);
-            }
+            var chosen = declaredKeyRole.length > 0 && Math.random() < 0.75
+              ? declaredKeyRole[Math.floor(Math.random() * declaredKeyRole.length)]
+              : candidates[Math.floor(Math.random() * candidates.length)];
+            guardedTargetId = chosen.id;
+            lastGuardedTargetId = chosen.id;
           }
         }
       }
-      day++;
-      updateStatus();
-      if (evaluateGameOutcome('night')) return;
-      addActionHint('「' + day + '日目の昼へ進む」を押してください。');
-      controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
-    }
 
-    function evaluateGameOutcome(phase) {
       var aliveWolves = players.filter(function(p) { return p.alive && p.role === '人狼'; });
-      var aliveHumans = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
-      var wolves = aliveWolves.length;
-      var humans = aliveHumans.length;
-      var playerIsWolf = players[0] && players[0].role === '人狼';
-
-      if (wolves === 0) {
-        var villageReason = phase === 'vote'
-          ? 'この追放によって、館に潜んでいた【人狼】がいなくなりました（生存者：人狼 0人 ／ 村人側 ' + humans + '人）。'
-          : '館に潜んでいた【人狼】がいなくなりました（生存者：人狼 0人 ／ 村人側 ' + humans + '人）。';
-
-        addLog('【決着】' + villageReason, 'declare-msg', '', true, null);
-
-        pendingEndInfo = {
-          resultMessage: '人狼は追放され、館に平穏が戻りました。【村人陣営の勝利】です。',
-          mood: playerIsWolf ? 'defeat' : 'victory',
-          isPlayerWin: !playerIsWolf
-        };
-        addActionHint('状況を確認したら、「結果発表へ進む」を押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
-        return true;
-      }
-
-      if (wolves >= humans) {
-        var isLastVillagerFall = humans > 0 && day >= 2;
-        if (isLastVillagerFall) {
-          setBgmMood('despair');
-        }
-
-        var wolfReason = '';
-        if (phase === 'vote') {
-          wolfReason = humans === 0
-            ? 'この追放によって生存している村人側がいなくなり、館は【人狼】に制圧されました。'
-            : 'この追放によって生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、もはや人狼を止める術はありません。';
-        } else if (phase === 'night') {
-          wolfReason = 'この襲撃によって生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、もはや人狼を止める術はありません。';
-        } else {
-          wolfReason = '生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、人狼陣営の勝利条件が満たされました。';
-        }
-
-        addLog('【決着】' + wolfReason, 'suspect-msg', '', true, null);
-
-        if (humans > 0) {
-          var remainingWolf = aliveWolves[0];
-          aliveHumans.forEach(function(lastVictim) {
-            lastVictim.alive = false;
-            var victimLabel = lastVictim.title + 'の' + lastVictim.name;
-            var wolfLabel = remainingWolf ? (remainingWolf.title + 'の' + remainingWolf.name) : '人狼';
-            var finalAttackText = lastVictim.isPlayer
-              ? '扉は閉ざされ、逃げ場はもうどこにもありません。正体を現した' + wolfLabel + 'が冷たい息を吐きながら迫り、最後の村人となった' + victimLabel + 'は絶望の中、闇へと引きずり込まれました。'
-              : '扉は閉ざされ、逃げ場はもうどこにもありません。正体を現した' + wolfLabel + 'が鋭い牙を剥き、最後の村人だった' + victimLabel + 'は絶望の中、闇へと引きずり込まれました。';
-            addLog(finalAttackText, 'suspect-msg', '逃げ場のない館に恐怖と絶望が満ち、灯りが消えた闇から低い唸り声が響く。', true, null);
-          });
-          updateStatus();
-        }
-
-        pendingEndInfo = {
-          resultMessage: '生き残った人々は人狼の牙に倒れました。【人狼陣営の勝利】です。',
-          mood: playerIsWolf ? 'victory' : 'defeat',
-          isPlayerWin: playerIsWolf
-        };
-        addActionHint('状況を確認したら、「結果発表へ進む」を押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
-        return true;
-      }
-
-      return false;
-    }
-
-    function proceedToFinalResult() {
-      if (!pendingEndInfo) return;
-      var info = pendingEndInfo;
-      pendingEndInfo = null;
-      endGame(info.resultMessage, info.mood, info.isPlayerWin);
-    }
-
-    function endGame(resultMessage, mood, isPlayerWin) {
-      screenState = 'ended';
-      setBgmMood(mood || 'victory');
-      if (isPlayerWin) {
-        playVictorySe();
-      }
-      clearLog();
-      updateStatus();
-      addLog('=== 結果発表 ===', 'system', '', true, null);
-      addLog(resultMessage, 'system', '', true, null);
-      addLog('--- すべての参加者の正体 ---', 'system', '', true, null);
-      players.forEach(function(p) {
-        addLog(p.title + ' ' + p.name + '：正体は【' + p.role + '】 (' + (p.alive ? '生存' : '脱落') + ')', '', '', true, null);
-      });
-      addActionHint('「オープニング画面に戻る」を押すか、Enterキーを押してください。');
-      returnBannerEl.style.display = 'block';
-      controlsEl.innerHTML = '<button type="button" onclick="returnToOpeningScreen()">オープニング画面に戻る</button>';
-    }
-
-    function renderButtons(targetList, callback, allowBack) {
-      if (allowBack === undefined) allowBack = false;
-      controlsEl.innerHTML = '';
-      targetList.forEach(function(target) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = target.title + ' ' + target.name;
-        btn.onclick = function() { callback(target); };
-        controlsEl.appendChild(btn);
-      });
-      if (allowBack) {
-        var backBtn = document.createElement('button');
-        backBtn.type = 'button';
-        backBtn.className = 'secondary';
-        backBtn.textContent = '戻る';
-        backBtn.onclick = function() { showPlayerDiscussionActions(); };
-        controlsEl.appendChild(backBtn);
-      }
-    }
-
-    updateAudioButtonsUI();
-  </script>
-</body>
-</html>
+      if (aliveWolves.length > 0) {
+        var targets = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
+        if (targets.length > 0) {
+          var playerIsWolf = aliveWolves.some(function(w) { return w.isPlayer; });
+          if (playerIsWolf) {
+            clearLog();
+            addLog('===
