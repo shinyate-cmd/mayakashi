@@ -1751,8 +1751,10 @@
     }
 
     function evaluateGameOutcome(phase) {
-      var wolves = players.filter(function(p) { return p.alive && p.role === '人狼'; }).length;
-      var humans = players.filter(function(p) { return p.alive && p.role !== '人狼'; }).length;
+      var aliveWolves = players.filter(function(p) { return p.alive && p.role === '人狼'; });
+      var aliveHumans = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
+      var wolves = aliveWolves.length;
+      var humans = aliveHumans.length;
       var playerIsWolf = players[0] && players[0].role === '人狼';
 
       if (wolves === 0) {
@@ -1776,15 +1778,29 @@
         var wolfReason = '';
         if (phase === 'vote') {
           wolfReason = humans === 0
-            ? 'この追放によって生存している村人側がいなくなり、館は【人狼】に制圧されました（生存者：人狼 ' + wolves + '人 ／ 村人側 0人）。'
-            : 'この追放によって生存数が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、人狼を止められる人数がいなくなりました。';
+            ? 'この追放によって生存している村人側がいなくなり、館は【人狼】に制圧されました。'
+            : 'この追放によって生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、もはや人狼を止める術はありません。';
         } else if (phase === 'night') {
-          wolfReason = 'この襲撃によって生存数が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、人狼を止められる人数がいなくなりました。';
+          wolfReason = 'この襲撃によって生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、もはや人狼を止める術はありません。';
         } else {
-          wolfReason = '生存数が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、人狼陣営の勝利条件が満たされました。';
+          wolfReason = '生存者が「人狼 ' + wolves + '人 対 村人側 ' + humans + '人」となり、人狼陣営の勝利条件が満たされました。';
         }
 
         addLog('【決着】' + wolfReason, 'suspect-msg', '', true, null);
+
+        if (humans > 0) {
+          var remainingWolf = aliveWolves[0];
+          aliveHumans.forEach(function(lastVictim) {
+            lastVictim.alive = false;
+            var victimLabel = lastVictim.title + 'の' + lastVictim.name;
+            var wolfLabel = remainingWolf ? (remainingWolf.title + 'の' + remainingWolf.name) : '人狼';
+            var finalAttackText = lastVictim.isPlayer
+              ? 'もはや誰も助けてくれる者はいません。正体を現した' + wolfLabel + 'が静かに歩み寄り、最後の生き残りとなった' + victimLabel + 'もまた闇の中で犠牲となりました。'
+              : 'もはや人狼を止められる者は残っていません。正体を現した' + wolfLabel + 'の牙にかかり、最後の生き残りだった' + victimLabel + 'もまた静かに犠牲となりました。';
+            addLog(finalAttackText, 'suspect-msg', '館の灯りが消え、逃げる術を失った背後に鋭い影が迫る。', true, null);
+          });
+          updateStatus();
+        }
 
         pendingEndInfo = {
           resultMessage: '生き残った人々は人狼の牙に倒れました。【人狼陣営の勝利】です。',
