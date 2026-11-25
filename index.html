@@ -121,6 +121,7 @@
     .declare-msg { color: #4ecca3; font-weight: bold; }
     .suspect-msg { color: #ff9a76; }
     .intro-msg { color: #e2e8f0; }
+    .ending-msg { color: #fde68a; background: #16213e; padding: 10px 12px; border-radius: 4px; border-left: 3px solid #ffd369; }
     .guide-msg { color: #e2e8f0; background: #16213e; padding: 10px; border-radius: 4px; white-space: pre-line; }
     .action-hint-log { color: #93c5fd; font-weight: bold; }
     .gesture {
@@ -302,6 +303,7 @@
     var day = 1;
     var suspicionScores = {};
     var dayStatements = [];
+    var storyChronicle = [];
     var pendingVoteTarget = null;
     var pendingEndInfo = null;
     var lastGuardedTargetId = null;
@@ -473,16 +475,146 @@
     ];
 
     var jobPool = [
-      { title: '薬師', bio: '薬草の知識に長け、常に冷静に周囲の体調や変化を観察している。' },
-      { title: '元刑事', bio: '鋭い眼光を持ち、人の些細な嘘や視線の泳ぎを見逃さない。' },
-      { title: '旅の商人', bio: '各地を渡り歩いてきた世渡り上手。損得と保身には敏感だ。' },
-      { title: '神父', bio: '穏やかな物腰で人々の心を和ませるが、罪に対しては厳しい一面を持つ。' },
-      { title: '猟師', bio: '山奥で暮らしてきた寡黙な実力者。獣の気配や夜の物音に敏感。' },
-      { title: '書記官', bio: '几帳面な性格で、誰がいつ何を言ったかを細かく記憶している。' },
-      { title: '鍛冶屋', bio: '屈強な体格と真っ直ぐな気性の持ち主。曲がったことが大嫌い。' },
-      { title: '占い師の弟子', bio: '星読みや古い伝承に詳しく、直感的な発言をすることが多い。' },
-      { title: '宿屋の主人', bio: '客の顔色を見るのが仕事。この集まりの全員の素性を気にかけている。' },
-      { title: '流浪の楽師', bio: '飄々とした態度で場を見守る観察者。皮肉交じりの冗談を好む。' }
+      {
+        title: '薬師',
+        bio: '薬草の知識に長け、常に冷静に周囲の体調や変化を観察している。',
+        suspectLines: {
+          male: [
+            function(t) { return '「薬師の目から見ればわかる。' + t + 'は呼吸が浅く、焦りを隠せていないな。」'; },
+            function(t) { return '「眠れぬ夜を過ごした顔色だ……' + t + '、何か後ろめたいことがあるんだろう？」'; }
+          ],
+          female: [
+            function(t) { return '「薬草を扱う者として見過ごせないわ。' + t + 'の脈の乱れと落ち着きのなさ、普通じゃないもの。」'; },
+            function(t) { return '「顔色を見ればわかるのよ。' + t + '、昨晩何かを隠していたでしょう？」'; }
+          ]
+        }
+      },
+      {
+        title: '元刑事',
+        bio: '鋭い眼光を持ち、人の些細な嘘や視線の泳ぎを見逃さない。',
+        suspectLines: {
+          male: [
+            function(t) { return '「長年の勘が告げている。' + t + 'の受け答えには、嘘をつく人間特有の曖昧さがある。」'; },
+            function(t) { return '「尋問ならとっくにクロだぜ。' + t + '、話の辻褄が合っていないぞ。」'; }
+          ],
+          female: [
+            function(t) { return '「元刑事として言わせてもらうわ。' + t + 'の視線の泳ぎ方、嘘をついている時の典型よ。」'; },
+            function(t) { return '「証拠を並べるまでもないわね。' + t + '、あなたの証言には矛盾が多すぎるの。」'; }
+          ]
+        }
+      },
+      {
+        title: '旅の商人',
+        bio: '各地を渡り歩いてきた世渡り上手。損得と保身には敏感だ。',
+        suspectLines: {
+          male: [
+            function(t) { return '「商売柄、人の本音には敏感でね。' + t + 'の言葉は信用に値しない、偽物の響きがするよ。」'; },
+            function(t) { return '「損得勘定で動いているのは誰かな？ 俺の目には' + t + 'が一番怪しく映るね。」'; }
+          ],
+          female: [
+            function(t) { return '「たくさんの人を見てきたけれど、' + t + 'のような言葉巧みな人ほど裏があるものよ。」'; },
+            function(t) { return '「信用取引なら絶対に断る相手ね。' + t + '、あなたの言い分には裏がありすぎるわ。」'; }
+          ]
+        }
+      },
+      {
+        title: '神父',
+        bio: '穏やかな物腰で人々の心を和ませるが、罪に対しては厳しい一面を持つ。',
+        suspectLines: {
+          male: [
+            function(t) { return '「嘘は魂を曇らせます。' + t + '、あなたの瞳の奥に潜む影を見過ごすわけにはいきません。」'; },
+            function(t) { return '「罪を背負う者の重苦しさが伝わってきます……' + t + '、正直に打ち明けてはくれませんか。」'; }
+          ],
+          female: [
+            function(t) { return '「偽りの言葉は必ずほころびを生みます。' + t + '、あなたの振る舞いには深い影が見えますわ。」'; },
+            function(t) { return '「どうか良心に従ってください。今のままでは' + t + 'を疑わざるを得ません。」'; }
+          ]
+        }
+      },
+      {
+        title: '猟師',
+        bio: '山奥で暮らしてきた寡黙な実力者。獣の気配や夜の物音に敏感。',
+        suspectLines: {
+          male: [
+            function(t) { return '「獣の匂いは誤魔化せない。' + t + 'の周りだけ、妙に血の気配が濃いな。」'; },
+            function(t) { return '「夜行性の獲物を追うのと同じだ。' + t + 'の足取りと視線が一番不自然だぜ。」'; }
+          ],
+          female: [
+            function(t) { return '「山で獣を追ってきた私にはわかるわ。' + t + 'からは獲物を狙う者の気配がするの。」'; },
+            function(t) { return '「夜の物音に一番敏感なのは誰かしらね。' + t + '、あなたの動きはまるで獣のようだわ。」'; }
+          ]
+        }
+      },
+      {
+        title: '書記官',
+        bio: '几帳面な性格で、誰がいつ何を言ったかを細かく記憶している。',
+        suspectLines: {
+          male: [
+            function(t) { return '「記録と照合してみたが、' + t + 'の主張は最初の発言と食い違っているぞ。」'; },
+            function(t) { return '「言質は取ってある。' + t + '、なぜさっきと違う態度を取っているんだ？」'; }
+          ],
+          female: [
+            function(t) { return '「発言の記録をたどると、' + t + 'だけ不自然に話をそらしているのがはっきりわかるわ。」'; },
+            function(t) { return '「細かい矛盾は見逃さないの。' + t + '、あなたの説明には穴がありすぎるわね。」'; }
+          ]
+        }
+      },
+      {
+        title: '鍛冶屋',
+        bio: '屈強な体格と真っ直ぐな気性の持ち主。曲がったことが大嫌い。',
+        suspectLines: {
+          male: [
+            function(t) { return '「真っ直ぐな鉄と歪んだ鉄は叩けばわかる。' + t + '、お前の言葉には歪みがあるな！」'; },
+            function(t) { return '「小細工は大嫌いだ。コソコソ立ち回る' + t + 'が一番怪しいに決まっている！」'; }
+          ],
+          female: [
+            function(t) { return '「鈍った刃みたいに切れ味が悪い言い訳ね。' + t + '、あなたが何か隠してるんでしょう！」'; },
+            function(t) { return '「正々堂々としない態度は気に入らないわ。' + t + '、はっきり白状しなさい！」'; }
+          ]
+        }
+      },
+      {
+        title: '占い師の弟子',
+        bio: '星読みや古い伝承に詳しく、直感的な発言をすることが多い。',
+        suspectLines: {
+          male: [
+            function(t) { return '「星の巡りが不吉な影を示している……' + t + '、お前の背後に禍々しい気配が漂っているぞ。」'; },
+            function(t) { return '「古い伝承にある災いの徴だ。' + t + 'の言動には人ならざる影が差している。」'; }
+          ],
+          female: [
+            function(t) { return '「星読みの直感が告げているの。' + t + 'の周りにだけ、冷たい闇の気配が渦巻いているわ。」'; },
+            function(t) { return '「理屈じゃないの、肌で感じるのよ。' + t + '、あなたの言葉には恐ろしい嘘が混じっているわ。」'; }
+          ]
+        }
+      },
+      {
+        title: '宿屋の主人',
+        bio: '客の顔色を見るのが仕事。この集まりの全員の素性を気にかけている。',
+        suspectLines: {
+          male: [
+            function(t) { return '「長年宿を切り盛りしてきたが、' + t + 'のように周囲を値踏みする客は要注意だ。」'; },
+            function(t) { return '「館の空気を乱しているのは' + t + 'だな。他の客とは明らかに様子が違う。」'; }
+          ],
+          female: [
+            function(t) { return '「お客様の様子を見るのが私の仕事よ。' + t + '、さっきから落ち着きがなくて不自然だわ。」'; },
+            function(t) { return '「トラブルを起こす方の顔はすぐにわかるの。' + t + '、何か隠しているわね？」'; }
+          ]
+        }
+      },
+      {
+        title: '流浪の楽師',
+        bio: '飄々とした態度で場を見守る観察者。皮肉交じりの冗談を好む。',
+        suspectLines: {
+          male: [
+            function(t) { return '「いやはや、調子外れの旋律が聞こえると思ったら' + t + 'の言い訳だったか。」'; },
+            function(t) { return '「舞台裏の仕掛けが見えてきたね。' + t + '、君の演技は少しばかり大げさすぎるよ。」'; }
+          ],
+          female: [
+            function(t) { return '「あらあら、不協和音が響いているわね。' + t + 'の言葉だけリズムが狂っているもの。」'; },
+            function(t) { return '「素敵な劇だけど、' + t + 'の台本には無理があるみたい。そろそろ本性を現したら？」'; }
+          ]
+        }
+      }
     ];
 
     var personalities = {
@@ -493,12 +625,18 @@
         gestures: [
           '静かに腕を組み、全員の顔を順番に見回す。',
           '指先でテーブルを軽く叩きながら、思考を整理している。',
-          '落ち着いた声色で、感情を抑えるように口を開いた。'
+          '落ち着いた声色で、感情を抑えるように口を開いた。',
+          '視線を一点に定め、これまでの流れを頭の中で組み立てている。'
         ],
         lines: {
           male: {
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'だ。事実と筋道を見極めながら、この状況を整理したい。」'; },
-            suspectLine: function(target) { return '「感情論は抜きにしよう。状況を見る限り、' + target + 'の言動には不自然な点が多い。」'; },
+            suspectPool: [
+              function(target) { return '「感情論は抜きにしよう。状況を見る限り、' + target + 'の言動には不自然な点が多い。」'; },
+              function(target) { return '「消去法で考えても結論は同じだ。' + target + 'の立ち回りには合理的な説明がつかない。」'; },
+              function(target) { return '「議論の焦点がぼやけているが、最も矛盾を抱えているのは' + target + 'だ。」'; },
+              function(target) { return '「これまでの投票と発言を並べれば明らかだ。' + target + 'を最優先で検証すべきだろう。」'; }
+            ],
             declareLine: function() { return '「混乱を避けるために名乗り出よう。私が本物の【占い師】だ。」'; },
             declareHunterLine: function() { return '「夜の備えとして明かしておこう。私が【狩人】だ。」'; },
             reportWolf: function(target) { return '「昨晩の占いの結果を報告する。' + target + 'は【人狼】だった。これで議論の軸は決まったな。」'; },
@@ -506,7 +644,12 @@
           },
           female: {
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'です。感情に流されず、冷静に手がかりを整理していきましょう。」'; },
-            suspectLine: function(target) { return '「落ち着いて考えてみましょう。' + target + 'の発言には、筋が通らない点がいくつかあります。」'; },
+            suspectPool: [
+              function(target) { return '「落ち着いて考えてみましょう。' + target + 'の発言には、筋が通らない点がいくつかあります。」'; },
+              function(target) { return '「感情に任せて選ぶべきではありません。客観的に見て、最も不審なのは' + target + 'です。」'; },
+              function(target) { return '「これまでの流れを振り返ると、' + target + 'だけが決定的な追及を避けていますね。」'; },
+              function(target) { return '「理屈で考えれば自然と答えが出ます。' + target + 'の行動には説明のつかない空白がありますわ。」'; }
+            ],
             declareLine: function() { return '「これ以上の混乱を防ぐために名乗り出ます。私が本物の【占い師】です。」'; },
             declareHunterLine: function() { return '「今夜の護衛に備えてお伝えします。私が【狩人】です。」'; },
             reportWolf: function(target) { return '「昨晩の占い結果をお伝えします。' + target + 'は【人狼】でした。慎重に判断しましょう。」'; },
@@ -521,12 +664,18 @@
         gestures: [
           '不安そうに周囲をキョロキョロと見渡し、小さく息を呑む。',
           '声を震わせながら、恐る恐るといった様子で手を挙げた。',
-          '落ち着かない様子で服の裾を握りしめている。'
+          '落ち着かない様子で服の裾を握りしめている。',
+          '物音にびくりと肩を揺らし、小さな声でつぶやいた。'
         ],
         lines: {
           male: {
             introLine: function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と言います。吹雪が怖いですけど、皆さんと協力したいです。」'; },
-            suspectLine: function(target) { return '「あ、あの、こんなこと言いたくないんですけど、' + target + 'さんが少し怖くて。」'; },
+            suspectPool: [
+              function(target) { return '「あ、あの、こんなこと言いたくないんですけど、' + target + 'さんが少し怖くて。」'; },
+              function(target) { return '「ち、違っていたらごめんなさい……でも、' + target + 'さんの視線がずっと気になっていたんです。」'; },
+              function(target) { return '「ぼ、僕には' + target + 'さんが何かを隠しているように見えて……震えが止まりません。」'; },
+              function(target) { return '「もし間違えたらと思うと怖いですが……今は' + target + 'さんが一番怪しい気がします。」'; }
+            ],
             declareLine: function() { return '「わ、僕なんです。本当は黙っていたかったけど、僕が【占い師】なんです。」'; },
             declareHunterLine: function() { return '「あ、あの……実は僕、【狩人】なんです。みんなを少しでも守りたいです。」'; },
             reportWolf: function(target) { return '「ひっ。昨晩、' + target + 'さんを占ったら、【人狼】って出たんです。本当です。」'; },
@@ -534,7 +683,12 @@
           },
           female: {
             introLine: function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と申します。怖いことが起きませんように……よろしくお願いします。」'; },
-            suspectLine: function(target) { return '「ご、ごめんなさい。こんなこと言いたくないんですけど、' + target + 'さんの様子が少し気になって……」'; },
+            suspectPool: [
+              function(target) { return '「ご、ごめんなさい。こんなこと言いたくないんですけど、' + target + 'さんの様子が少し気になって……」'; },
+              function(target) { return '「私なんかが言っていいのか分かりませんけど……' + target + 'さん、さっきから少し不自然じゃありませんか？」'; },
+              function(target) { return '「夜が来るのが本当に怖くて……どうしても' + target + 'さんのことが疑わしく思えてしまうんです。」'; },
+              function(target) { return '「き、気のせいならいいんですけど、' + target + 'さんだけ周囲と空気が違うような気がして……」'; }
+            ],
             declareLine: function() { return '「わ、私なんです。本当は隠していたかったんですけど、私が【占い師】なんです。」'; },
             declareHunterLine: function() { return '「ご、ごめんなさい……実は私、【狩人】なんです。夜もちゃんと守りますね。」'; },
             reportWolf: function(target) { return '「ひっ……昨晩、' + target + 'さんを占ったら、【人狼】って出てしまったんです。」'; },
@@ -549,12 +703,18 @@
         gestures: [
           'テーブルにドンと拳をつき、鋭い視線を飛ばす。',
           '苛立ちを隠せない様子で、顎をしゃくって言い放った。',
-          '真っ直ぐに相手を見据え、力強い声で言葉を叩きつける。'
+          '真っ直ぐに相手を見据え、力強い声で言葉を叩きつける。',
+          '腕まくりをして身を乗り出し、場の空気を一気に引き締めた。'
         ],
         lines: {
           male: {
             introLine: function(p) { return '「俺は' + p.title + 'の' + p.name + 'だ。隠し事をする奴はすぐにわかる、よろしく頼むぜ。」'; },
-            suspectLine: function(target) { return '「おい' + target + '。さっきから顔色が悪いぞ。お前が人狼なんだろう、白状しろ。」'; },
+            suspectPool: [
+              function(target) { return '「おい' + target + '。さっきから顔色が悪いぞ。お前が人狼なんだろう、白状しろ。」'; },
+              function(target) { return '「回りくどい話はなしだ！ 一番怪しいのは' + target + '、お前しかいねぇ！」'; },
+              function(target) { return '「黙ってやり過ごせると思うなよ、' + target + '。俺の目はごまかせねぇぜ！」'; },
+              function(target) { return '「ここで決めなきゃ次はやられる番だ。' + target + '、お前が黒幕なんだろう！」'; }
+            ],
             declareLine: function() { return '「隠していても仕方ねぇな。俺が本物の【占い師】だ。文句ある奴は出てこい。」'; },
             declareHunterLine: function() { return '「よく聞け。俺が【狩人】だ。今夜も誰かの命を張って守ってやる。」'; },
             reportWolf: function(target) { return '「ビンゴだ。昨晩' + target + 'を占ってやったが、こいつが【人狼】で間違いねぇ。」'; },
@@ -562,7 +722,12 @@
           },
           female: {
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。ごまかしは許さないわ、よろしくね。」'; },
-            suspectLine: function(target) { return '「ちょっと' + target + '。さっきから態度がおかしいじゃない。あなたが人狼なんでしょ？」'; },
+            suspectPool: [
+              function(target) { return '「ちょっと' + target + '。さっきから態度がおかしいじゃない。あなたが人狼なんでしょ？」'; },
+              function(target) { return '「はっきり言わせてもらうわ！ 一番怪しいのは' + target + '、あなたよ！」'; },
+              function(target) { return '「誤魔化そうとしても無駄よ、' + target + '。堂々としているつもりでもボロが出てるわ！」'; },
+              function(target) { return '「迷っている暇なんてないわ。' + target + '、今ここで白黒つけましょう！」'; }
+            ],
             declareLine: function() { return '「隠していても始まらないわ。私が本物の【占い師】よ。嘘つきは黙りなさい。」'; },
             declareHunterLine: function() { return '「はっきり言っておくわね。私が【狩人】よ。夜に襲わせるわけにはいかないわ。」'; },
             reportWolf: function(target) { return '「やっぱりね。昨晩' + target + 'を占ったら、【人狼】って出たわよ。」'; },
@@ -577,12 +742,18 @@
         gestures: [
           '口の端にわずかな笑みを浮かべ、面白そうに様子をうかがっている。',
           '肩をすくめ、やれやれといった仕草でため息をついた。',
-          '斜に構えた姿勢で、探るような視線を送る。'
+          '斜に構えた姿勢で、探るような視線を送る。',
+          '指先で顎をなぞりながら、含みのある笑みを浮かべた。'
         ],
         lines: {
           male: {
             introLine: function(p) { return '「僕は' + p.title + 'の' + p.name + 'さ。この館でどんなドラマが起きるか、じっくり見せてもらうよ。」'; },
-            suspectLine: function(target) { return '「へぇ、' + target + 'は随分と余裕そうだね。何か後ろめたいことでも隠してるのかな。」'; },
+            suspectPool: [
+              function(target) { return '「へぇ、' + target + 'は随分と余裕そうだね。何か後ろめたいことでも隠してるのかな。」'; },
+              function(target) { return '「おやおや、' + target + 'の立ち回りは見事なものだね。まるで人狼のお手本のようだよ。」'; },
+              function(target) { return '「みんな優しいから見逃しているけれど、' + target + 'の言動が一番臭うと思うけどね。」'; },
+              function(target) { return '「さて、そろそろ化けの皮を剥がそうか。' + target + '、君の番だとは思わないかい？」'; }
+            ],
             declareLine: function() { return '「やれやれ、僕が名乗り出るしかないか。実はね、僕が【占い師】なんだよ。」'; },
             declareHunterLine: function() { return '「物好きな役回りだけどね。実は僕が【狩人】さ。今夜は誰を守ろうかな。」'; },
             reportWolf: function(target) { return '「残念なお知らせだ。昨晩' + target + 'を占ったら、見事に【人狼】と出たよ。」'; },
@@ -590,7 +761,12 @@
           },
           female: {
             introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。この閉ざされた館でどんな化けの皮が剥がれるか、楽しみだわ。」'; },
-            suspectLine: function(target) { return '「あら、' + target + 'はずいぶん余裕そうね。何か都合の悪いことでも隠しているのかしら。」'; },
+            suspectPool: [
+              function(target) { return '「あら、' + target + 'はずいぶん余裕そうね。何か都合の悪いことでも隠しているのかしら。」'; },
+              function(target) { return '「ふふ、' + target + 'って本当に上手に立ち回るわね。疑われないコツでも知っているのかしら？」'; },
+              function(target) { return '「みんな気づいていないふりをしているけれど、' + target + 'が一番怪しいのは明白よ。」'; },
+              function(target) { return '「そろそろお芝居も終わりにしましょうか。' + target + '、あなたの本性を聞かせてちょうだい。」'; }
+            ],
             declareLine: function() { return '「やれやれ、私が名乗り出る番みたいね。実は、私が【占い師】なのよ。」'; },
             declareHunterLine: function() { return '「割に合わない役目だけどね。実は私が【狩人】なのよ。誰を守ろうかしら。」'; },
             reportWolf: function(target) { return '「困ったわね。昨晩' + target + 'を占ったら、はっきり【人狼】と出たわよ。」'; },
@@ -603,8 +779,25 @@
     function getPersonaLine(personality, gender, key, arg1) {
       var gKey = gender === 'female' ? 'female' : 'male';
       var set = (personality && personality.lines && (personality.lines[gKey] || personality.lines.male)) || null;
-      if (!set || typeof set[key] !== 'function') return '';
+      if (!set) return '';
+      if (key === 'suspectLine' && Array.isArray(set.suspectPool) && set.suspectPool.length > 0) {
+        var fn = set.suspectPool[Math.floor(Math.random() * set.suspectPool.length)];
+        return fn(arg1);
+      }
+      if (typeof set[key] !== 'function') return '';
       return set[key](arg1);
+    }
+
+    function buildNpcSuspectLine(npc, target) {
+      var targetLabel = target.title + 'の' + target.name;
+      var gKey = npc.gender === 'female' ? 'female' : 'male';
+      var jobDef = jobPool.find(function(j) { return j.title === npc.title; });
+      if (jobDef && jobDef.suspectLines && jobDef.suspectLines[gKey] && Math.random() < 0.45) {
+        var jList = jobDef.suspectLines[gKey];
+        var jFn = jList[Math.floor(Math.random() * jList.length)];
+        return jFn(targetLabel);
+      }
+      return getPersonaLine(npc.personality, npc.gender, 'suspectLine', targetLabel);
     }
 
     function createFixedVoiceProfile(gender, age, personality, slotIndex) {
@@ -701,6 +894,147 @@
       osc.stop(startAt + duration + rel + 0.04);
     }
 
+    // 伸びやかな音色（ピアノ・バイオリン・フルート用）
+    function playExpressiveInstrument(instrument, freq, duration, peakGain, delaySec) {
+      if (!bgmEnabled || !freq || freq <= 0) return;
+      var ctx = ensureAudioContext();
+      if (!ctx) return;
+
+      var startAt = ctx.currentTime + (delaySec || 0);
+
+      if (instrument === 'piano') {
+        // ピアノ：澄んだ立ち上がりと温かみのある倍音・余韻
+        var osc1 = ctx.createOscillator();
+        var osc2 = ctx.createOscillator();
+        var filter = ctx.createBiquadFilter();
+        var gain = ctx.createGain();
+
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(freq, startAt);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(freq * 2, startAt);
+
+        var subGain = ctx.createGain();
+        subGain.gain.setValueAtTime(0.22, startAt);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2400, startAt);
+        filter.frequency.exponentialRampToValueAtTime(680, startAt + duration + 0.7);
+
+        var maxG = peakGain || 0.085;
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.linearRampToValueAtTime(maxG, startAt + 0.015);
+        gain.gain.exponentialRampToValueAtTime(maxG * 0.42, startAt + 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration + 0.85);
+
+        osc1.connect(filter);
+        osc2.connect(subGain);
+        subGain.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(startAt);
+        osc2.start(startAt);
+        osc1.stop(startAt + duration + 0.9);
+        osc2.stop(startAt + duration + 0.9);
+        return;
+      }
+
+      if (instrument === 'violin') {
+        // バイオリン：弓の立ち上がりと豊かなビブラートを伴う伸びやかな弦の響き
+        var vOsc1 = ctx.createOscillator();
+        var vOsc2 = ctx.createOscillator();
+        var lfo = ctx.createOscillator();
+        var lfoGain = ctx.createGain();
+        var vFilter = ctx.createBiquadFilter();
+        var vGain = ctx.createGain();
+
+        vOsc1.type = 'sawtooth';
+        vOsc1.frequency.setValueAtTime(freq, startAt);
+        vOsc2.type = 'triangle';
+        vOsc2.frequency.setValueAtTime(freq * 1.002, startAt);
+
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(5.2, startAt);
+        lfoGain.gain.setValueAtTime(0.01, startAt);
+        lfoGain.gain.linearRampToValueAtTime(freq * 0.009, startAt + 0.28);
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(vOsc1.frequency);
+        lfoGain.connect(vOsc2.frequency);
+
+        vFilter.type = 'lowpass';
+        vFilter.frequency.setValueAtTime(1750, startAt);
+
+        var vMax = peakGain || 0.078;
+        vGain.gain.setValueAtTime(0.0001, startAt);
+        vGain.gain.linearRampToValueAtTime(vMax, startAt + 0.14);
+        vGain.gain.setValueAtTime(vMax * 0.92, startAt + Math.max(0.16, duration * 0.75));
+        vGain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration + 0.45);
+
+        vOsc1.connect(vFilter);
+        vOsc2.connect(vFilter);
+        vFilter.connect(vGain);
+        vGain.connect(ctx.destination);
+
+        vOsc1.start(startAt);
+        vOsc2.start(startAt);
+        lfo.start(startAt);
+        vOsc1.stop(startAt + duration + 0.5);
+        vOsc2.stop(startAt + duration + 0.5);
+        lfo.stop(startAt + duration + 0.5);
+        return;
+      }
+
+      if (instrument === 'flute') {
+        // フルート：息の柔らかい立ち上がりと澄んで伸びる高音の響き
+        var fOsc1 = ctx.createOscillator();
+        var fOsc2 = ctx.createOscillator();
+        var fLfo = ctx.createOscillator();
+        var fLfoGain = ctx.createGain();
+        var fFilter = ctx.createBiquadFilter();
+        var fGain = ctx.createGain();
+
+        fOsc1.type = 'sine';
+        fOsc1.frequency.setValueAtTime(freq, startAt);
+        fOsc2.type = 'triangle';
+        fOsc2.frequency.setValueAtTime(freq, startAt);
+
+        var fBlend = ctx.createGain();
+        fBlend.gain.setValueAtTime(0.25, startAt);
+
+        fLfo.type = 'sine';
+        fLfo.frequency.setValueAtTime(4.6, startAt);
+        fLfoGain.gain.setValueAtTime(0.01, startAt);
+        fLfoGain.gain.linearRampToValueAtTime(freq * 0.006, startAt + 0.22);
+
+        fLfo.connect(fLfoGain);
+        fLfoGain.connect(fOsc1.frequency);
+
+        fFilter.type = 'lowpass';
+        fFilter.frequency.setValueAtTime(2600, startAt);
+
+        var fMax = peakGain || 0.072;
+        fGain.gain.setValueAtTime(0.0001, startAt);
+        fGain.gain.linearRampToValueAtTime(fMax, startAt + 0.11);
+        fGain.gain.setValueAtTime(fMax * 0.9, startAt + Math.max(0.14, duration * 0.78));
+        fGain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration + 0.42);
+
+        fOsc1.connect(fFilter);
+        fOsc2.connect(fBlend);
+        fBlend.connect(fFilter);
+        fFilter.connect(fGain);
+        fGain.connect(ctx.destination);
+
+        fOsc1.start(startAt);
+        fOsc2.start(startAt);
+        fLfo.start(startAt);
+        fOsc1.stop(startAt + duration + 0.48);
+        fOsc2.stop(startAt + duration + 0.48);
+        fLfo.stop(startAt + duration + 0.48);
+      }
+    }
+
     function playVictorySe() {
       if (!bgmEnabled) return;
       ensureAudioContext();
@@ -715,32 +1049,100 @@
       });
     }
 
-    var openingMelodySequence = [
-      220.00, 0, 261.63, 0, 329.63, 0, 293.66, 0,
-      220.00, 0, 246.94, 0, 261.63, 0, 0, 0,
-
-      293.66, 329.63, 392.00, 329.63, 293.66, 329.63, 440.00, 392.00,
-      329.63, 293.66, 261.63, 293.66, 329.63, 392.00, 440.00, 493.88,
-
-      523.25, 587.33, 659.25, 587.33, 523.25, 440.00, 523.25, 587.33,
-      659.25, 587.33, 523.25, 493.88, 440.00, 392.00, 440.00, 493.88,
-
-      440.00, 392.00, 329.63, 293.66, 261.63, 293.66, 329.63, 261.63,
-      220.00, 0, 196.00, 0, 220.00, 0, 0, 0
+    // 新規作曲タイトルBGM：ピアノ・バイオリン・フルートの三重奏（全64ステップ・Dm〜F〜Gm〜A7〜Dm）
+    var titlePianoArp = [
+      // Aメロ（1-16）：ピアノの静かなアルペジオ導入
+      146.83, 220.00, 293.66, 349.23,  146.83, 220.00, 293.66, 349.23,
+      116.54, 174.61, 233.08, 293.66,  130.81, 196.00, 261.63, 329.63,
+      // Bメロ（17-32）：展開
+      174.61, 220.00, 261.63, 349.23,  196.00, 246.94, 293.66, 392.00,
+      220.00, 261.63, 329.63, 440.00,  220.00, 277.18, 329.63, 440.00,
+      // サビ（33-48）：高まり
+      146.83, 220.00, 293.66, 349.23,  196.00, 246.94, 293.66, 392.00,
+      174.61, 220.00, 261.63, 349.23,  130.81, 196.00, 261.63, 329.63,
+      // エンディング・余韻（49-64）
+      116.54, 174.61, 233.08, 293.66,  146.83, 220.00, 293.66, 349.23,
+      110.00, 164.81, 220.00, 277.18,  146.83, 220.00, 293.66, 0
     ];
 
-    var openingBassSequence = [
-      110.00, 0, 0, 0, 110.00, 0, 0, 0,
-      98.00, 0, 0, 0, 87.31, 0, 0, 0,
+    var titleViolinLead = [
+      // 1-16：バイオリンが伸びやかに歌い出す
+      0, 0, 0, 0,                      440.00, 0, 0, 0,
+      466.16, 0, 440.00, 0,            392.00, 0, 349.23, 0,
+      // 17-32：情熱的なフレーズ
+      523.25, 0, 0, 493.88,            440.00, 0, 392.00, 0,
+      440.00, 0, 523.25, 0,            554.37, 0, 0, 0,
+      // 33-48：クライマックスのロングトーン
+      587.33, 0, 0, 0,                 659.25, 0, 587.33, 0,
+      523.25, 0, 493.88, 0,            440.00, 0, 392.00, 0,
+      // 49-64：静かに収束する旋律
+      349.23, 0, 392.00, 0,            440.00, 0, 0, 0,
+      329.63, 0, 277.18, 0,            293.66, 0, 0, 0
+    ];
 
-      146.83, 0, 146.83, 0, 130.81, 0, 130.81, 0,
-      110.00, 0, 110.00, 0, 98.00, 0, 98.00, 0,
+    var titleViolinDur = [
+      0, 0, 0, 0,                      1.45, 0, 0, 0,
+      0.75, 0, 0.75, 0,                0.75, 0, 0.85, 0,
 
-      130.81, 0, 196.00, 0, 110.00, 0, 164.81, 0,
-      130.81, 0, 196.00, 0, 146.83, 0, 220.00, 0,
+      1.15, 0, 0, 0.45,                0.75, 0, 0.85, 0,
+      0.75, 0, 0.75, 0,                1.45, 0, 0, 0,
 
-      110.00, 0, 146.83, 0, 130.81, 0, 98.00, 0,
-      110.00, 0, 98.00, 0, 110.00, 0, 0, 0
+      1.55, 0, 0, 0,                   0.75, 0, 0.75, 0,
+      0.75, 0, 0.75, 0,                0.75, 0, 0.85, 0,
+
+      0.75, 0, 0.75, 0,                1.45, 0, 0, 0,
+      0.75, 0, 0.75, 0,                1.65, 0, 0, 0
+    ];
+
+    var titleFluteMelody = [
+      // 1-16：後半から澄んだ高音で応答
+      0, 0, 0, 0,                      0, 0, 0, 0,
+      698.46, 0, 0, 659.25,            587.33, 0, 523.25, 0,
+      // 17-32：バイオリンと掛け合う伸びやかな高音
+      0, 0, 698.46, 0,                 783.99, 0, 0, 0,
+      880.00, 0, 783.99, 0,            698.46, 0, 659.25, 0,
+      // 33-48：頂点のロングトーン
+      0, 0, 880.00, 0,                 987.77, 0, 880.00, 0,
+      783.99, 0, 0, 0,                 659.25, 0, 587.33, 0,
+      // 49-64：余韻を残す高音
+      587.33, 0, 0, 0,                 659.25, 0, 698.46, 0,
+      659.25, 0, 554.37, 0,            587.33, 0, 0, 0
+    ];
+
+    var titleFluteDur = [
+      0, 0, 0, 0,                      0, 0, 0, 0,
+      1.15, 0, 0, 0.45,                0.75, 0, 0.85, 0,
+
+      0, 0, 0.85, 0,                   1.45, 0, 0, 0,
+      0.75, 0, 0.75, 0,                0.75, 0, 0.85, 0,
+
+      0, 0, 0.85, 0,                   0.75, 0, 0.75, 0,
+      1.45, 0, 0, 0,                   0.75, 0, 0.85, 0,
+
+      1.45, 0, 0, 0,                   0.75, 0, 0.75, 0,
+      0.75, 0, 0.75, 0,                1.65, 0, 0, 0
+    ];
+
+    // エンディング専用BGM：物語を振り返る静謐で温かいピアノ・バイオリン・フルート楽曲（32ステップ）
+    var endingPianoSeq = [
+      261.63, 329.63, 392.00, 493.88,  220.00, 261.63, 329.63, 392.00,
+      174.61, 220.00, 261.63, 349.23,  196.00, 246.94, 293.66, 392.00,
+      261.63, 329.63, 392.00, 523.25,  220.00, 261.63, 329.63, 440.00,
+      174.61, 220.00, 261.63, 349.23,  196.00, 246.94, 261.63, 0
+    ];
+
+    var endingViolinSeq = [
+      523.25, 0, 0, 493.88,            440.00, 0, 392.00, 0,
+      349.23, 0, 392.00, 0,            440.00, 0, 392.00, 0,
+      523.25, 0, 587.33, 0,            659.25, 0, 587.33, 0,
+      523.25, 0, 493.88, 0,            523.25, 0, 0, 0
+    ];
+
+    var endingFluteSeq = [
+      0, 0, 783.99, 0,                 659.25, 0, 0, 0,
+      587.33, 0, 659.25, 0,            698.46, 0, 587.33, 0,
+      0, 0, 880.00, 0,                 987.77, 0, 880.00, 0,
+      783.99, 0, 698.46, 0,            783.99, 0, 0, 0
     ];
 
     var turnMelodyConfigs = {
@@ -794,6 +1196,9 @@
         melodyDur: 0.55,
         bassDur: 0.85,
         filter: 620
+      },
+      ending: {
+        intervalMs: 450
       },
       victory: {
         intervalMs: 390,
@@ -849,10 +1254,11 @@
     };
 
     var bgmPatterns = {
-      opening: { intervalMs: 420 },
+      opening: { intervalMs: 410 },
       calm: { intervalMs: turnMelodyConfigs.calm.intervalMs },
       suspense: { intervalMs: turnMelodyConfigs.suspense.intervalMs },
       night: { intervalMs: turnMelodyConfigs.night.intervalMs },
+      ending: { intervalMs: turnMelodyConfigs.ending.intervalMs },
       victory: { intervalMs: turnMelodyConfigs.victory.intervalMs },
       defeat: { intervalMs: turnMelodyConfigs.defeat.intervalMs },
       despair: { intervalMs: turnMelodyConfigs.despair.intervalMs }
@@ -885,28 +1291,42 @@
         var activeMood = currentBgmMood;
 
         if (activeMood === 'opening') {
-          var idx = bgmStep % openingMelodySequence.length;
-          var isDevelopment = idx >= 16 && idx < 32;
-          var isClimax = idx >= 32 && idx < 48;
-          var isEnding = idx >= 48;
+          var idx = bgmStep % titlePianoArp.length;
+          var pFreq = titlePianoArp[idx];
+          var vFreq = titleViolinLead[idx];
+          var vDur = titleViolinDur[idx] || 0.85;
+          var fFreq = titleFluteMelody[idx];
+          var fDur = titleFluteDur[idx] || 0.85;
 
-          var melFreq = openingMelodySequence[idx];
-          var bassFreq = openingBassSequence[idx];
-
-          if (melFreq > 0) {
-            var melType = isClimax ? 'triangle' : (isDevelopment ? 'triangle' : 'sine');
-            var melGain = isClimax ? 0.095 : (isDevelopment ? 0.082 : (isEnding ? 0.068 : 0.065));
-            var melFilter = isClimax ? 2100 : (isDevelopment ? 1650 : 1100);
-            var melDur = isEnding ? 0.85 : (isClimax ? 0.56 : 0.62);
-
-            playTone(melFreq, melDur, melType, melGain, 0.03, melDur * 0.85, melFilter, 0);
-            if (isClimax) {
-              playTone(melFreq * 1.498, 0.48, 'sine', 0.044, 0.04, 0.55, 2300, 0.02);
-            }
+          if (pFreq > 0) {
+            var isRootBeat = idx % 4 === 0;
+            playExpressiveInstrument('piano', pFreq, isRootBeat ? 0.95 : 0.55, isRootBeat ? 0.088 : 0.068, 0);
           }
-          if (bassFreq > 0) {
-            var bassGain = isClimax ? 0.088 : (isDevelopment ? 0.072 : 0.058);
-            playTone(bassFreq, 1.1, 'sine', bassGain, 0.06, 0.9, 540, 0);
+          if (vFreq > 0) {
+            playExpressiveInstrument('violin', vFreq, vDur, 0.072, 0.02);
+          }
+          if (fFreq > 0) {
+            playExpressiveInstrument('flute', fFreq, fDur, 0.068, 0.03);
+          }
+          bgmStep++;
+          return;
+        }
+
+        if (activeMood === 'ending') {
+          var eIdx = bgmStep % endingPianoSeq.length;
+          var epFreq = endingPianoSeq[eIdx];
+          var evFreq = endingViolinSeq[eIdx];
+          var efFreq = endingFluteSeq[eIdx];
+
+          if (epFreq > 0) {
+            var eRoot = eIdx % 4 === 0;
+            playExpressiveInstrument('piano', epFreq, eRoot ? 1.05 : 0.62, eRoot ? 0.085 : 0.065, 0);
+          }
+          if (evFreq > 0) {
+            playExpressiveInstrument('violin', evFreq, 1.15, 0.068, 0.02);
+          }
+          if (efFreq > 0) {
+            playExpressiveInstrument('flute', efFreq, 1.05, 0.064, 0.04);
           }
           bgmStep++;
           return;
@@ -1069,7 +1489,11 @@
     function speakText(rawText, speaker) {
       if (!speechEnabled || !speechSupported || !rawText) return;
       try {
-        var cleaned = normalizeSpeechPronunciation(rawText.replace(/[=\-【】]/g, '')).trim();
+        var cleaned = normalizeSpeechPronunciation(
+          String(rawText)
+            .replace(/[=\-【】「」『』]/g, ' ')
+            .replace(/\s+/g, ' ')
+        ).trim();
         if (!cleaned) return;
         var profile = computeVoiceProfile(speaker || null);
         var utterance = new SpeechSynthesisUtterance(cleaned);
@@ -1117,6 +1541,7 @@
       screenState = 'opening';
       pendingEndInfo = null;
       lastGuardedTargetId = null;
+      storyChronicle = [];
       setBgmMood('opening');
       gameScreenEl.style.display = 'none';
       openingScreenEl.style.display = 'block';
@@ -1284,6 +1709,7 @@
       lastGuardedTargetId = null;
       suspicionScores = {};
       dayStatements = [];
+      storyChronicle = [];
       pendingVoteTarget = null;
       pendingEndInfo = null;
 
@@ -1347,7 +1773,7 @@
       statusEl.textContent = '準備完了（全' + players.length + '名）| ' + playerName + '（' + playerJob.title + '）';
 
       addLog('ゲームの操作説明を聞きますか？', 'system');
-      addActionHint('「はい」または「いいえ」を押してください。');
+      addActionHint('はい、または、いいえを押してください。');
       controlsEl.innerHTML =
         '<button type="button" onclick="showTutorialAndStart()">はい</button>' +
         '<button type="button" class="secondary" onclick="beginMainGame()">いいえ</button>';
@@ -1362,7 +1788,7 @@
         '3. 【夜】は占い師が1人の正体を調べ、狩人が1人を護衛し、人狼が1人を襲撃します（護衛された人は襲撃から守られます）。\n' +
         '4. 勝敗が決するまで3日目以降も昼と夜が続き、人狼を追放すれば【村人陣営の勝利】、生存する人狼と村人側の数が同じになると【人狼陣営の勝利】です。';
       addLog(guideText, 'guide-msg');
-      addActionHint('「説明を読んでゲームを始める」を押してください。');
+      addActionHint('説明を読んでゲームを始めるボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="beginMainGame()">説明を読んでゲームを始める</button>';
     }
 
@@ -1373,7 +1799,7 @@
       var memberSummary = players.map(function(p) { return p.title + 'の' + p.name; }).join('、');
       addLog('参加者（' + players.length + '名）：' + memberSummary, 'system', '', true, null);
       addLog(players[0].title + ' ' + players[0].name + ' の裏の顔（役職）は【' + players[0].role + '】です。（画面下部の参加者名簿で全員の背景を確認できます）', 'system', '', true, null);
-      addActionHint('「全員の自己紹介へ進む」を押してください。');
+      addActionHint('全員の自己紹介へ進むボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="startIntroductions()">全員の自己紹介へ進む</button>';
       renderRosterPanel();
     }
@@ -1398,14 +1824,13 @@
         }
       });
 
-      addActionHint('「1日目の昼へ進む」を押してください。');
+      addActionHint('1日目の昼へ進むボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">1日目の昼へ進む</button>';
       renderRosterPanel();
     }
 
     function startDayPhase() {
       if (evaluateGameOutcome('other')) {
-        proceedToFinalResult();
         return;
       }
       var aliveCount = players.filter(function(p) { return p.alive; }).length;
@@ -1498,7 +1923,7 @@
         if (npc.role === '人狼') {
           var nonWolves = candidates.filter(function(p) { return p.role !== '人狼'; });
           var scapegoat = nonWolves[Math.floor(Math.random() * nonWolves.length)] || target;
-          addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'suspectLine', scapegoat.title + 'の' + scapegoat.name), 'suspect-msg', gesture, true, npc);
+          addLog(speakerLabel + buildNpcSuspectLine(npc, scapegoat), 'suspect-msg', gesture, true, npc);
           dayStatements.push({
             speaker: npc,
             kind: 'suspect',
@@ -1509,7 +1934,7 @@
         } else {
           if (declaredSeers.length >= 2 && npc.declaredRole !== '占い師') {
             var suspectSeer = declaredSeers[Math.floor(Math.random() * declaredSeers.length)];
-            addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'suspectLine', suspectSeer.title + 'の' + suspectSeer.name), 'suspect-msg', gesture, true, npc);
+            addLog(speakerLabel + buildNpcSuspectLine(npc, suspectSeer), 'suspect-msg', gesture, true, npc);
             dayStatements.push({
               speaker: npc,
               kind: 'suspect',
@@ -1518,7 +1943,7 @@
             });
             suspicionScores[suspectSeer.id] += 1.2;
           } else {
-            addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'suspectLine', target.title + 'の' + target.name), '', gesture, true, npc);
+            addLog(speakerLabel + buildNpcSuspectLine(npc, target), '', gesture, true, npc);
             dayStatements.push({
               speaker: npc,
               kind: 'suspect',
@@ -1536,7 +1961,7 @@
         showPlayerDiscussionActions();
       } else {
         addLog(players[0].name + 'は脱落しているため発言できません。生存者による昼の投票結果を確認しましょう。', 'system', '', true, null);
-        addActionHint('「昼の投票結果を確認する」を押してください。');
+        addActionHint('昼の投票結果を確認するボタンを押してください。');
         controlsEl.innerHTML = '<button type="button" onclick="executeVote(null)">昼の投票結果を確認する</button>';
       }
     }
@@ -1545,7 +1970,7 @@
       var me = players[0];
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
       addLog('--- ' + me.name + 'の発言ターン（投票前の駆け引き） ---', 'system', '', true, null);
-      addActionHint('「誰かを怪しいと指摘する」「意見に賛同・反論する」「役職を名乗り出る」「様子を見る」から選んでください。');
+      addActionHint('誰かを怪しいと指摘する、意見に賛同または反論する、役職を名乗り出る、様子を見る、から選んでください。');
       controlsEl.innerHTML = '';
 
       var btnSuspect = document.createElement('button');
@@ -1553,7 +1978,7 @@
       btnSuspect.textContent = '誰かを怪しいと指摘する';
       btnSuspect.onclick = function() {
         addLog('誰を怪しいと主張しますか？', 'system', '', true, null);
-        addActionHint('怪しいと思う人物のボタンを押してください。やり直す場合は「戻る」を押してください。');
+        addActionHint('怪しいと思う人物のボタンを押してください。やり直す場合は戻るを押してください。');
         renderButtons(
           players.filter(function(p) { return p.alive && !p.isPlayer; }),
           function(target) {
@@ -1680,7 +2105,7 @@
       }
 
       addLog(stanceType === 'agree' ? '誰の意見に賛同しますか？' : '誰の意見に反論しますか？', 'system', '', true, null);
-      addActionHint('対象となる発言のボタンを押してください。やり直す場合は「戻る」を押してください。');
+      addActionHint('対象となる発言のボタンを押してください。やり直す場合は戻るを押してください。');
       controlsEl.innerHTML = '';
 
       aliveStatements.forEach(function(st) {
@@ -1752,13 +2177,13 @@
       var me = players[0];
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
       addLog('【嘘の占い報告】誰について報告しますか？', 'system', '', true, null);
-      addActionHint('報告したい相手のボタンを押してください。やり直す場合は「戻る」を押してください。');
+      addActionHint('報告したい相手のボタンを押してください。やり直す場合は戻るを押してください。');
       renderButtons(
         players.filter(function(p) { return p.alive && !p.isPlayer; }),
         function(target) {
           controlsEl.innerHTML = '';
           addLog(target.title + 'の' + target.name + 'について、どちらの嘘を報告しますか？', 'system', '', true, null);
-          addActionHint('「人狼だと嘘をつく」または「村人側だと嘘をつく」を押してください。');
+          addActionHint('人狼だと嘘をつく、または、村人側だと嘘をつくボタンを押してください。');
           var btnWolf = document.createElement('button');
           btnWolf.type = 'button';
           btnWolf.textContent = target.title + 'の' + target.name + 'は【人狼】だと嘘をつく';
@@ -1813,7 +2238,7 @@
         : pickMaleVoteLine(targetLabel);
 
       addLog(speakerLabel + voteSpeech, 'suspect-msg', '投票箱の前に進み、静かに決断を口にする。', true, me);
-      addActionHint('「投票結果を確認する」を押してください。');
+      addActionHint('投票結果を確認するボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="executeVote(pendingVoteTarget)">投票結果を確認する</button>';
     }
 
@@ -1829,7 +2254,7 @@
       var alivePlayers = players.filter(function(p) { return p.alive; });
       if (alivePlayers.length === 0) {
         if (evaluateGameOutcome('vote')) return;
-        addActionHint('「夜フェーズへ進む」を押してください。');
+        addActionHint('夜フェーズへ進むボタンを押してください。');
         controlsEl.innerHTML = '<button type="button" onclick="startNightPhase()">夜フェーズへ進む</button>';
         return;
       }
@@ -1887,9 +2312,11 @@
       if (topCandidates.length > 1) {
         var namesText = topCandidates.map(function(p) { return p.title + 'の' + p.name; }).join(' と ');
         addLog('投票の結果（各' + maxVotes + '票の同票）、' + namesText + ' が追放されました。', 'system', '', true, null);
+        storyChronicle.push(day + '日目の昼：同票の末、' + namesText + 'が館から追放された。');
       } else if (topCandidates.length === 1) {
         var onlyExecuted = topCandidates[0];
         addLog('投票の結果（' + maxVotes + '票）、' + onlyExecuted.title + 'の' + onlyExecuted.name + ' が追放されました。', 'system', '', true, null);
+        storyChronicle.push(day + '日目の昼：議論と投票により、' + onlyExecuted.title + 'の' + onlyExecuted.name + '（' + onlyExecuted.role + '）が追放された。');
       }
 
       topCandidates.forEach(function(banished) {
@@ -1899,7 +2326,7 @@
       });
 
       if (evaluateGameOutcome('vote')) return;
-      addActionHint('「夜フェーズへ進む」を押してください。');
+      addActionHint('夜フェーズへ進むボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="startNightPhase()">夜フェーズへ進む</button>';
     }
 
@@ -1933,7 +2360,7 @@
               me.lastSeerResult = { targetId: target.id, isWolf: isWolf };
               var result = isWolf ? '【人狼】' : '【人狼ではない】';
               addLog('占いの結果、' + target.title + 'の' + target.name + ' は ' + result + ' でした。（翌日の議論で報告できます）', 'declare-msg', '', true, null);
-              addActionHint('「狩人の護衛・夜の出来事へ進む」を押してください。');
+              addActionHint('狩人の護衛・夜の出来事へ進むボタンを押してください。');
               controlsEl.innerHTML = '<button type="button" onclick="runHunterAndWolfNight(null)">狩人の護衛・夜の出来事へ進む</button>';
             }
           );
@@ -1958,7 +2385,7 @@
               clearLog();
               addLog('=== ' + day + '日目の夜フェーズ（護衛設定） ===', 'system', '', true, null);
               addLog('あなたは静かに身を潜め、' + target.title + 'の' + target.name + ' を今夜の護衛対象に選びました。', 'declare-msg', '', true, null);
-              addActionHint('「夜の出来事へ進む」を押してください。');
+              addActionHint('夜の出来事へ進むボタンを押してください。');
               controlsEl.innerHTML = '<button type="button" onclick="runHunterAndWolfNight(' + target.id + ')">夜の出来事へ進む</button>';
             }
           );
@@ -1967,7 +2394,7 @@
       }
 
       addLog('静まり返った館の中で、それぞれの夜が更けていく。', 'system', '', true, null);
-      addActionHint('「夜の出来事へ進む」を押してください。');
+      addActionHint('夜の出来事へ進むボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="runHunterAndWolfNight(null)">夜の出来事へ進む</button>';
     }
 
@@ -2013,14 +2440,16 @@
               addLog('闇に紛れて' + target.title + 'の' + target.name + ' が襲撃されました。', 'system', '', true, null);
               if (guardedTargetId === target.id) {
                 addLog('しかし、狩人の護衛によって襲撃は阻まれ、' + target.title + 'の' + target.name + ' は無事に生き延びました！', 'declare-msg', '', true, null);
+                storyChronicle.push(day + '日目の夜：人狼が' + target.title + 'の' + target.name + 'を襲ったが、狩人の護衛によって阻止された。');
               } else {
                 target.alive = false;
                 addLog(formatVictimDiscovery(target), 'system', '', true, null);
+                storyChronicle.push(day + '日目の夜：闇の中で' + target.title + 'の' + target.name + '（' + target.role + '）が人狼の犠牲となった。');
               }
               day++;
               updateStatus();
               if (evaluateGameOutcome('night')) return;
-              addActionHint('「' + day + '日目の昼へ進む」を押してください。');
+              addActionHint(day + '日目の昼へ進むボタンを押してください。');
               controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
             });
             return;
@@ -2034,9 +2463,11 @@
             if (victim) {
               if (guardedTargetId === victim.id) {
                 addLog('今夜は人狼が' + victim.title + 'の' + victim.name + 'を襲撃しようとしましたが、狩人の護衛によって犠牲者は出ませんでした！', 'declare-msg', '', true, null);
+                storyChronicle.push(day + '日目の夜：人狼が' + victim.title + 'の' + victim.name + 'を狙ったが、狩人の護衛が成功し犠牲者は出なかった。');
               } else {
                 victim.alive = false;
                 addLog(formatVictimDiscovery(victim), 'system', '', true, null);
+                storyChronicle.push(day + '日目の夜：' + victim.title + 'の' + victim.name + '（' + victim.role + '）が人狼に襲われ命を落とした。');
               }
             }
           }
@@ -2045,7 +2476,7 @@
       day++;
       updateStatus();
       if (evaluateGameOutcome('night')) return;
-      addActionHint('「' + day + '日目の昼へ進む」を押してください。');
+      addActionHint(day + '日目の昼へ進むボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="startDayPhase()">' + day + '日目の昼へ進む</button>';
     }
 
@@ -2064,12 +2495,13 @@
         addLog('【決着】' + villageReason, 'declare-msg', '', true, null);
 
         pendingEndInfo = {
+          winnerSide: 'village',
           resultMessage: '人狼は追放され、館に平穏が戻りました。【村人陣営の勝利】です。',
           mood: playerIsWolf ? 'defeat' : 'victory',
           isPlayerWin: !playerIsWolf
         };
-        addActionHint('状況を確認したら、「結果発表へ進む」を押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
+        addActionHint('状況を確認したら、エンディングへ進むボタンを押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="showEndingStory()">エンディングへ進む</button>';
         return true;
       }
 
@@ -2107,16 +2539,82 @@
         }
 
         pendingEndInfo = {
+          winnerSide: 'wolf',
           resultMessage: '生き残った人々は人狼の牙に倒れました。【人狼陣営の勝利】です。',
           mood: playerIsWolf ? 'victory' : 'defeat',
           isPlayerWin: playerIsWolf
         };
-        addActionHint('状況を確認したら、「結果発表へ進む」を押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
+        addActionHint('状況を確認したら、エンディングへ進むボタンを押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="showEndingStory()">エンディングへ進む</button>';
         return true;
       }
 
       return false;
+    }
+
+    function showEndingStory() {
+      if (!pendingEndInfo) return;
+      setBgmMood('ending');
+      clearLog();
+
+      var wolfMembers = players.filter(function(p) { return p.role === '人狼'; });
+      var wolfNames = wolfMembers.map(function(w) { return w.title + 'の' + w.name; }).join('、');
+      var survivors = players.filter(function(p) { return p.alive; });
+      var survivorNames = survivors.length > 0
+        ? survivors.map(function(s) { return s.title + 'の' + s.name; }).join('、')
+        : '誰も残らなかった';
+
+      addLog('=== エンディング：閉ざされた館の記憶 ===', 'system', '', true, null);
+
+      addLog(
+        '吹雪に閉ざされた古い館に集まった' + players.length + '人。疑心と偽りが交錯する日々の中で、それぞれの言葉と選択が運命を分かつことになりました。',
+        'ending-msg',
+        '静かなピアノと弦の調べが、館の長い夜を包み込む。',
+        true,
+        null
+      );
+
+      if (storyChronicle.length > 0) {
+        addLog('--- 館で起きた出来事の振り返り ---', 'system', '', true, null);
+        storyChronicle.forEach(function(entry) {
+          addLog('・' + entry, 'ending-msg', '', true, null);
+        });
+      }
+
+      if (pendingEndInfo.winnerSide === 'village') {
+        addLog(
+          '館の闇に潜んでいた人狼は、' + wolfNames + 'でした。人々は互いの言葉を見極め、ついに偽りの仮面を打ち破ったのです。',
+          'ending-msg',
+          '',
+          true,
+          null
+        );
+        addLog(
+          'やがて夜明けとともに吹雪は止み、重い館の扉が開かれました。生き残った' + survivorNames + 'は、深い安堵とともに朝の光の中へと踏み出していきます。',
+          'ending-msg',
+          '',
+          true,
+          null
+        );
+      } else {
+        addLog(
+          '最後まで人々の目を欺き通した人狼の正体は、' + wolfNames + 'でした。疑念の渦の中で村人たちは判断を誤り、館の支配権は闇へと渡ったのです。',
+          'ending-msg',
+          '',
+          true,
+          null
+        );
+        addLog(
+          '吹雪が降り続く古い館には、もはや人の声は響きません。すべてを飲み込んだ静寂だけが、いつまでも残り続けました。',
+          'ending-msg',
+          '',
+          true,
+          null
+        );
+      }
+
+      addActionHint('物語を振り返ったら、結果発表へ進むボタンを押してください。');
+      controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
     }
 
     function proceedToFinalResult() {
@@ -2140,7 +2638,7 @@
       players.forEach(function(p) {
         addLog(p.title + ' ' + p.name + '：正体は【' + p.role + '】 (' + (p.alive ? '生存' : '脱落') + ')', '', '', true, null);
       });
-      addActionHint('「オープニング画面に戻る」を押すか、Enterキーを押してください。');
+      addActionHint('オープニング画面に戻るボタンを押すか、エンターキーを押してください。');
       returnBannerEl.style.display = 'block';
       controlsEl.innerHTML = '<button type="button" onclick="returnToOpeningScreen()">オープニング画面に戻る</button>';
     }
