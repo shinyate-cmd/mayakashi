@@ -393,7 +393,6 @@
       return maleVoteLineTemplates[idx](targetLabel);
     }
 
-    // 追放された時の多彩なセリフ・仕草パターン
     var banishedReactionPools = {
       '人狼': {
         male: [
@@ -2533,7 +2532,7 @@
       );
     }
 
-    // 議論の整理フェーズ（疑われ数の集計＋発言要約）
+    // 議論の整理フェーズ（生存者・名乗り出た役職・疑われ人数の集計のみシンプルに表示）
     function showDiscussionSummaryPhase() {
       setBgmMood('suspense');
       addLog('=== ' + day + '日目の議論の整理 ===', 'system', '', true, null);
@@ -2543,10 +2542,9 @@
 
       var declaredList = aliveList.filter(function(p) { return !!p.declaredRole; });
       var declaredText = declaredList.length > 0
-        ? declaredList.map(function(p) { return p.title + 'の' + p.name + '（' + p.declaredRole + 'CO）'; }).join('、')
+        ? declaredList.map(function(p) { return p.title + 'の' + p.name + '（' + p.declaredRole + '）'; }).join('、')
         : 'なし';
 
-      // 誰が何名から怪しいと指摘（または人狼報告・反論）されているかを集計
       var accusersMap = {};
       aliveList.forEach(function(p) {
         accusersMap[p.id] = [];
@@ -2556,9 +2554,8 @@
         if (!st.speaker || !st.target) return;
         if (st.kind === 'suspect' || st.kind === 'reportWolf' || st.kind === 'disagree') {
           if (accusersMap[st.target.id]) {
-            var speakerName = st.speaker.title + 'の' + st.speaker.name;
-            if (accusersMap[st.target.id].indexOf(speakerName) === -1) {
-              accusersMap[st.target.id].push(speakerName);
+            if (accusersMap[st.target.id].indexOf(st.speaker.id) === -1) {
+              accusersMap[st.target.id].push(st.speaker.id);
             }
           }
         }
@@ -2567,36 +2564,22 @@
       var rankedTargets = aliveList.map(function(p) {
         return {
           player: p,
-          accusers: accusersMap[p.id] || []
+          count: (accusersMap[p.id] || []).length
         };
       }).sort(function(a, b) {
-        return b.accusers.length - a.accusers.length;
+        return b.count - a.count;
       });
 
       var summaryLines = [
-        '【現在の生存者（' + aliveList.length + '名）】' + aliveNames,
+        '【生存者（' + aliveList.length + '名）】' + aliveNames,
         '【役職を名乗り出ている人物】' + declaredText,
-        '【誰が何名から怪しいと指摘されているか（集計）】'
+        '【怪しいと指摘されている人数】'
       ];
 
       rankedTargets.forEach(function(item) {
         var label = item.player.title + 'の' + item.player.name;
-        var count = item.accusers.length;
-        if (count > 0) {
-          summaryLines.push('・' + label + '：' + count + '名から指摘（' + item.accusers.join('、') + '）');
-        } else {
-          summaryLines.push('・' + label + '：0名（指摘なし）');
-        }
+        summaryLines.push('・' + label + '：' + item.count + '名');
       });
-
-      summaryLines.push('【本日の議論の要点】');
-      if (dayStatements.length > 0) {
-        dayStatements.forEach(function(st) {
-          summaryLines.push('・' + st.summary);
-        });
-      } else {
-        summaryLines.push('・目立った発言はありませんでした。');
-      }
 
       addLog(summaryLines.join('\n'), 'summary-msg', '', true, null);
 
