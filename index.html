@@ -122,6 +122,7 @@
     .suspect-msg { color: #ff9a76; }
     .intro-msg { color: #e2e8f0; }
     .ending-msg { color: #fde68a; background: #16213e; padding: 10px 12px; border-radius: 4px; border-left: 3px solid #ffd369; }
+    .summary-msg { color: #e0f2fe; background: #16213e; padding: 10px 12px; border-radius: 4px; border-left: 3px solid #38bdf8; white-space: pre-line; }
     .guide-msg { color: #e2e8f0; background: #16213e; padding: 10px; border-radius: 4px; white-space: pre-line; }
     .action-hint-log { color: #93c5fd; font-weight: bold; }
     .gesture {
@@ -894,7 +895,6 @@
       osc.stop(startAt + duration + rel + 0.04);
     }
 
-    // 伸びやかな音色（ピアノ・バイオリン・フルート用）
     function playExpressiveInstrument(instrument, freq, duration, peakGain, delaySec) {
       if (!bgmEnabled || !freq || freq <= 0) return;
       var ctx = ensureAudioContext();
@@ -903,7 +903,6 @@
       var startAt = ctx.currentTime + (delaySec || 0);
 
       if (instrument === 'piano') {
-        // ピアノ：澄んだ立ち上がりと温かみのある倍音・余韻
         var osc1 = ctx.createOscillator();
         var osc2 = ctx.createOscillator();
         var filter = ctx.createBiquadFilter();
@@ -941,7 +940,6 @@
       }
 
       if (instrument === 'violin') {
-        // バイオリン：弓の立ち上がりと豊かなビブラートを伴う伸びやかな弦の響き
         var vOsc1 = ctx.createOscillator();
         var vOsc2 = ctx.createOscillator();
         var lfo = ctx.createOscillator();
@@ -987,7 +985,6 @@
       }
 
       if (instrument === 'flute') {
-        // フルート：息の柔らかい立ち上がりと澄んで伸びる高音の響き
         var fOsc1 = ctx.createOscillator();
         var fOsc2 = ctx.createOscillator();
         var fLfo = ctx.createOscillator();
@@ -1049,33 +1046,24 @@
       });
     }
 
-    // 新規作曲タイトルBGM：ピアノ・バイオリン・フルートの三重奏（全64ステップ・Dm〜F〜Gm〜A7〜Dm）
     var titlePianoArp = [
-      // Aメロ（1-16）：ピアノの静かなアルペジオ導入
       146.83, 220.00, 293.66, 349.23,  146.83, 220.00, 293.66, 349.23,
       116.54, 174.61, 233.08, 293.66,  130.81, 196.00, 261.63, 329.63,
-      // Bメロ（17-32）：展開
       174.61, 220.00, 261.63, 349.23,  196.00, 246.94, 293.66, 392.00,
       220.00, 261.63, 329.63, 440.00,  220.00, 277.18, 329.63, 440.00,
-      // サビ（33-48）：高まり
       146.83, 220.00, 293.66, 349.23,  196.00, 246.94, 293.66, 392.00,
       174.61, 220.00, 261.63, 349.23,  130.81, 196.00, 261.63, 329.63,
-      // エンディング・余韻（49-64）
       116.54, 174.61, 233.08, 293.66,  146.83, 220.00, 293.66, 349.23,
       110.00, 164.81, 220.00, 277.18,  146.83, 220.00, 293.66, 0
     ];
 
     var titleViolinLead = [
-      // 1-16：バイオリンが伸びやかに歌い出す
       0, 0, 0, 0,                      440.00, 0, 0, 0,
       466.16, 0, 440.00, 0,            392.00, 0, 349.23, 0,
-      // 17-32：情熱的なフレーズ
       523.25, 0, 0, 493.88,            440.00, 0, 392.00, 0,
       440.00, 0, 523.25, 0,            554.37, 0, 0, 0,
-      // 33-48：クライマックスのロングトーン
       587.33, 0, 0, 0,                 659.25, 0, 587.33, 0,
       523.25, 0, 493.88, 0,            440.00, 0, 392.00, 0,
-      // 49-64：静かに収束する旋律
       349.23, 0, 392.00, 0,            440.00, 0, 0, 0,
       329.63, 0, 277.18, 0,            293.66, 0, 0, 0
     ];
@@ -1083,28 +1071,21 @@
     var titleViolinDur = [
       0, 0, 0, 0,                      1.45, 0, 0, 0,
       0.75, 0, 0.75, 0,                0.75, 0, 0.85, 0,
-
       1.15, 0, 0, 0.45,                0.75, 0, 0.85, 0,
       0.75, 0, 0.75, 0,                1.45, 0, 0, 0,
-
       1.55, 0, 0, 0,                   0.75, 0, 0.75, 0,
       0.75, 0, 0.75, 0,                0.75, 0, 0.85, 0,
-
       0.75, 0, 0.75, 0,                1.45, 0, 0, 0,
       0.75, 0, 0.75, 0,                1.65, 0, 0, 0
     ];
 
     var titleFluteMelody = [
-      // 1-16：後半から澄んだ高音で応答
       0, 0, 0, 0,                      0, 0, 0, 0,
       698.46, 0, 0, 659.25,            587.33, 0, 523.25, 0,
-      // 17-32：バイオリンと掛け合う伸びやかな高音
       0, 0, 698.46, 0,                 783.99, 0, 0, 0,
       880.00, 0, 783.99, 0,            698.46, 0, 659.25, 0,
-      // 33-48：頂点のロングトーン
       0, 0, 880.00, 0,                 987.77, 0, 880.00, 0,
       783.99, 0, 0, 0,                 659.25, 0, 587.33, 0,
-      // 49-64：余韻を残す高音
       587.33, 0, 0, 0,                 659.25, 0, 698.46, 0,
       659.25, 0, 554.37, 0,            587.33, 0, 0, 0
     ];
@@ -1112,18 +1093,14 @@
     var titleFluteDur = [
       0, 0, 0, 0,                      0, 0, 0, 0,
       1.15, 0, 0, 0.45,                0.75, 0, 0.85, 0,
-
       0, 0, 0.85, 0,                   1.45, 0, 0, 0,
       0.75, 0, 0.75, 0,                0.75, 0, 0.85, 0,
-
       0, 0, 0.85, 0,                   0.75, 0, 0.75, 0,
       1.45, 0, 0, 0,                   0.75, 0, 0.85, 0,
-
       1.45, 0, 0, 0,                   0.75, 0, 0.75, 0,
       0.75, 0, 0.75, 0,                1.65, 0, 0, 0
     ];
 
-    // エンディング専用BGM：物語を振り返る静謐で温かいピアノ・バイオリン・フルート楽曲（32ステップ）
     var endingPianoSeq = [
       261.63, 329.63, 392.00, 493.88,  220.00, 261.63, 329.63, 392.00,
       174.61, 220.00, 261.63, 349.23,  196.00, 246.94, 293.66, 392.00,
@@ -1688,7 +1665,6 @@
       return list[Math.floor(Math.random() * list.length)];
     }
 
-    // 7人制：人狼1名・占い師1名・狩人1名・村人4名
     function buildRoleDeckForCount(count) {
       var base = ['人狼', '占い師', '狩人', '村人', '村人', '村人', '村人'];
       if (count > base.length) {
@@ -1784,7 +1760,7 @@
       var guideText =
         '【「マヤカシ」の進め方（全' + TOTAL_PLAYERS + '名・人狼1名／占い師1名／狩人1名／村人4名）】\n' +
         '1. 参加者' + TOTAL_PLAYERS + '人の中に1人だけ【人狼】が紛れ、占い師・狩人・村人がそれぞれの役目を担います。\n' +
-        '2. 【昼】はみんなの言葉や役職の宣言を聞き、怪しいと思う人に投票して追放します（同票の最多得票者が複数いる場合は全員追放されます）。\n' +
+        '2. 【昼】はみんなの言葉や役職の宣言を聞き、議論の整理を確認したうえで怪しいと思う人に投票して追放します（同票の最多得票者が複数いる場合は全員追放されます）。\n' +
         '3. 【夜】は占い師が1人の正体を調べ、狩人が1人を護衛し、人狼が1人を襲撃します（護衛された人は襲撃から守られます）。\n' +
         '4. 勝敗が決するまで3日目以降も昼と夜が続き、人狼を追放すれば【村人陣営の勝利】、生存する人狼と村人側の数が同じになると【人狼陣営の勝利】です。';
       addLog(guideText, 'guide-msg');
@@ -1858,13 +1834,31 @@
         if (npc.role === '占い師' && !npc.declaredRole && (day === 1 || Math.random() < 0.8)) {
           npc.declaredRole = '占い師';
           addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'declareLine'), 'declare-msg', gesture, true, npc);
+          dayStatements.push({
+            speaker: npc,
+            kind: 'declare',
+            target: null,
+            summary: npc.title + ' ' + npc.name + 'が【占い師】と名乗り出た'
+          });
         } else if (npc.role === '狩人' && !npc.declaredRole && day >= 2 && Math.random() < 0.55) {
           npc.declaredRole = '狩人';
           addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'declareHunterLine'), 'declare-msg', gesture, true, npc);
+          dayStatements.push({
+            speaker: npc,
+            kind: 'declare',
+            target: null,
+            summary: npc.title + ' ' + npc.name + 'が【狩人】と名乗り出た'
+          });
           suspicionScores[npc.id] -= 1.0;
         } else if (npc.role === '人狼' && !npc.declaredRole && day <= 2 && Math.random() < 0.45) {
           npc.declaredRole = '占い師';
           addLog(speakerLabel + getPersonaLine(npc.personality, npc.gender, 'declareLine'), 'declare-msg', gesture, true, npc);
+          dayStatements.push({
+            speaker: npc,
+            kind: 'declare',
+            target: null,
+            summary: npc.title + ' ' + npc.name + 'が【占い師】と名乗り出た'
+          });
         }
 
         if (npc.declaredRole === '占い師') {
@@ -1960,9 +1954,8 @@
       if (players[0].alive) {
         showPlayerDiscussionActions();
       } else {
-        addLog(players[0].name + 'は脱落しているため発言できません。生存者による昼の投票結果を確認しましょう。', 'system', '', true, null);
-        addActionHint('昼の投票結果を確認するボタンを押してください。');
-        controlsEl.innerHTML = '<button type="button" onclick="executeVote(null)">昼の投票結果を確認する</button>';
+        addLog(players[0].name + 'は脱落しているため発言できません。議論の整理を確認してから投票へ進みましょう。', 'system', '', true, null);
+        showDiscussionSummaryPhase();
       }
     }
 
@@ -1986,16 +1979,22 @@
               ? '「みなさん聞いてください。' + target.title + 'の' + target.name + 'の言動が不自然です。人狼に違いありません。」'
               : '「みんな聞いてくれ。' + target.title + 'の' + target.name + 'の言動が不自然だ。人狼に違いない。」';
             addLog(speakerLabel + line, 'suspect-msg', '一同を見渡し、力強い口調で訴えかける。', true, me);
+            dayStatements.push({
+              speaker: me,
+              kind: 'suspect',
+              target: target,
+              summary: me.title + ' ' + me.name + '（あなた）の指摘（' + target.title + 'の' + target.name + 'が怪しい）'
+            });
             suspicionScores[target.id] += 3.2;
             suspicionScores[me.id] += 0.5;
-            startVotePhase();
+            showDiscussionSummaryPhase();
           },
           true
         );
       };
       controlsEl.appendChild(btnSuspect);
 
-      var aliveStatements = dayStatements.filter(function(st) { return st.speaker && st.speaker.alive; });
+      var aliveStatements = dayStatements.filter(function(st) { return st.speaker && st.speaker.alive && !st.speaker.isPlayer && st.kind !== 'declare'; });
       if (aliveStatements.length > 0) {
         var btnAgree = document.createElement('button');
         btnAgree.type = 'button';
@@ -2042,6 +2041,12 @@
               : '「私が本物の【占い師】だ。嘘をついている者がいるなら今すぐ名乗り出ろ。」';
           }
           addLog(speakerLabel + line, 'declare-msg', '一歩前に出て、堂々と宣言する。', true, me);
+          dayStatements.push({
+            speaker: me,
+            kind: 'declare',
+            target: null,
+            summary: me.title + ' ' + me.name + '（あなた）が【' + claimRole + '】と名乗り出た'
+          });
           if (claimRole === '占い師') {
             players.filter(function(p) { return p.alive && !p.isPlayer && p.declaredRole === '占い師'; }).forEach(function(rival) {
               suspicionScores[rival.id] += 2.0;
@@ -2051,6 +2056,12 @@
               if (t) {
                 var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人側（白）】';
                 addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
+                dayStatements.push({
+                  speaker: me,
+                  kind: me.lastSeerResult.isWolf ? 'reportWolf' : 'reportHuman',
+                  target: t,
+                  summary: me.title + ' ' + me.name + '（あなた）の占い報告（' + t.title + 'の' + t.name + 'は' + (me.lastSeerResult.isWolf ? '人狼' : '村人側') + '）'
+                });
                 if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
                 else suspicionScores[t.id] -= 2.5;
               }
@@ -2059,7 +2070,7 @@
               return;
             }
           }
-          startVotePhase();
+          showDiscussionSummaryPhase();
         };
         controlsEl.appendChild(btnDeclare);
       } else if (me.declaredRole === '占い師') {
@@ -2073,10 +2084,16 @@
             if (t) {
               var r = me.lastSeerResult.isWolf ? '【人狼】' : '【村人側（白）】';
               addLog(speakerLabel + '「昨晩、' + t.title + 'の' + t.name + 'を占った結果は' + r + 'でした。」', 'declare-msg', '', true, me);
+              dayStatements.push({
+                speaker: me,
+                kind: me.lastSeerResult.isWolf ? 'reportWolf' : 'reportHuman',
+                target: t,
+                summary: me.title + ' ' + me.name + '（あなた）の占い報告（' + t.title + 'の' + t.name + 'は' + (me.lastSeerResult.isWolf ? '人狼' : '村人側') + '）'
+              });
               if (me.lastSeerResult.isWolf) suspicionScores[t.id] += 4.5;
               else suspicionScores[t.id] -= 2.5;
             }
-            startVotePhase();
+            showDiscussionSummaryPhase();
           } else {
             askFakeSeerReport();
           }
@@ -2090,7 +2107,13 @@
       btnPass.textContent = '発言を控えて様子を見る';
       btnPass.onclick = function() {
         addLog(speakerLabel + 'は言葉少なに周囲の反応を観察している。', '', '静かに息を潜め、全員の表情を見つめる。', true, me);
-        startVotePhase();
+        dayStatements.push({
+          speaker: me,
+          kind: 'pass',
+          target: null,
+          summary: me.title + ' ' + me.name + '（あなた）は発言を控えて様子を見た'
+        });
+        showDiscussionSummaryPhase();
       };
       controlsEl.appendChild(btnPass);
     }
@@ -2098,7 +2121,7 @@
     function chooseStanceTarget(stanceType) {
       var me = players[0];
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
-      var aliveStatements = dayStatements.filter(function(st) { return st.speaker && st.speaker.alive; });
+      var aliveStatements = dayStatements.filter(function(st) { return st.speaker && st.speaker.alive && !st.speaker.isPlayer && st.kind !== 'declare'; });
       if (aliveStatements.length === 0) {
         showPlayerDiscussionActions();
         return;
@@ -2137,6 +2160,12 @@
               suspicionScores[st.speaker.id] -= 0.5;
             }
             addLog(speakerLabel + agreeLine, 'declare-msg', 'うなずきながら賛意を示す。', true, me);
+            dayStatements.push({
+              speaker: me,
+              kind: 'agree',
+              target: st.target,
+              summary: me.title + ' ' + me.name + '（あなた）が' + spLabel + 'の意見に賛同した'
+            });
           } else {
             var disagreeLine = '';
             if (st.kind === 'reportHuman' && st.target) {
@@ -2158,9 +2187,15 @@
               suspicionScores[st.speaker.id] += 1.8;
             }
             addLog(speakerLabel + disagreeLine, 'suspect-msg', '真っ直ぐに見据え、きっぱりと異議を唱える。', true, me);
+            dayStatements.push({
+              speaker: me,
+              kind: 'disagree',
+              target: st.speaker,
+              summary: me.title + ' ' + me.name + '（あなた）が' + spLabel + 'の意見に反論した'
+            });
           }
 
-          startVotePhase();
+          showDiscussionSummaryPhase();
         };
         controlsEl.appendChild(btn);
       });
@@ -2189,8 +2224,14 @@
           btnWolf.textContent = target.title + 'の' + target.name + 'は【人狼】だと嘘をつく';
           btnWolf.onclick = function() {
             addLog(speakerLabel + '「昨晩、' + target.title + 'の' + target.name + 'を占った結果、【人狼】でした。」', 'declare-msg', '', true, me);
+            dayStatements.push({
+              speaker: me,
+              kind: 'reportWolf',
+              target: target,
+              summary: me.title + ' ' + me.name + '（あなた）の占い報告（' + target.title + 'の' + target.name + 'は人狼）'
+            });
             suspicionScores[target.id] += 3.5;
-            startVotePhase();
+            showDiscussionSummaryPhase();
           };
           var btnHuman = document.createElement('button');
           btnHuman.type = 'button';
@@ -2198,14 +2239,58 @@
           btnHuman.textContent = target.title + 'の' + target.name + 'は【村人側】だと嘘をつく';
           btnHuman.onclick = function() {
             addLog(speakerLabel + '「昨晩、' + target.title + 'の' + target.name + 'を占った結果、【村人側（白）】でした。」', 'declare-msg', '', true, me);
+            dayStatements.push({
+              speaker: me,
+              kind: 'reportHuman',
+              target: target,
+              summary: me.title + ' ' + me.name + '（あなた）の占い報告（' + target.title + 'の' + target.name + 'は村人側）'
+            });
             suspicionScores[target.id] -= 2.0;
-            startVotePhase();
+            showDiscussionSummaryPhase();
           };
           controlsEl.appendChild(btnWolf);
           controlsEl.appendChild(btnHuman);
         },
         true
       );
+    }
+
+    // 議論の整理フェーズ（投票ボタンの誤連打防止と状況把握）
+    function showDiscussionSummaryPhase() {
+      setBgmMood('suspense');
+      addLog('=== ' + day + '日目の議論の整理 ===', 'system', '', true, null);
+
+      var aliveList = players.filter(function(p) { return p.alive; });
+      var aliveNames = aliveList.map(function(p) { return p.title + 'の' + p.name; }).join('、');
+
+      var declaredList = aliveList.filter(function(p) { return !!p.declaredRole; });
+      var declaredText = declaredList.length > 0
+        ? declaredList.map(function(p) { return p.title + 'の' + p.name + '（' + p.declaredRole + 'CO）'; }).join('、')
+        : 'なし';
+
+      var summaryLines = [
+        '【現在の生存者（' + aliveList.length + '名）】' + aliveNames,
+        '【役職を名乗り出ている人物】' + declaredText,
+        '【本日の議論の要点】'
+      ];
+
+      if (dayStatements.length > 0) {
+        dayStatements.forEach(function(st) {
+          summaryLines.push('・' + st.summary);
+        });
+      } else {
+        summaryLines.push('・目立った発言はありませんでした。');
+      }
+
+      addLog(summaryLines.join('\n'), 'summary-msg', '', true, null);
+
+      if (players[0].alive) {
+        addActionHint('議論の整理を確認したら、投票フェーズへ進むボタンを押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="startVotePhase()">投票フェーズへ進む</button>';
+      } else {
+        addActionHint('議論の整理を確認したら、昼の投票結果を確認するボタンを押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="executeVote(null)">昼の投票結果を確認する</button>';
+      }
     }
 
     function startVotePhase() {
@@ -2216,7 +2301,7 @@
       setBgmMood('suspense');
       pendingVoteTarget = null;
       addLog('=== ' + day + '日目の投票フェーズ ===', 'system', '', true, null);
-      addLog('誰を追放しますか？', 'system', '', true, null);
+      addLog('議論を踏まえ、誰を追放しますか？', 'system', '', true, null);
       addActionHint('追放したい人物のボタンを押してください。');
       renderButtons(
         players.filter(function(p) { return p.alive && !p.isPlayer; }),
