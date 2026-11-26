@@ -393,46 +393,167 @@
       return maleVoteLineTemplates[idx](targetLabel);
     }
 
+    // 追放された時の多彩なセリフ・仕草パターン
+    var banishedReactionPools = {
+      '人狼': {
+        male: [
+          {
+            gesture: '苦々しく舌打ちをし、鋭い視線を残して席を立つ。',
+            line: '「ちっ……詰めが甘かったか。だが、この館の闇は簡単には消えんぞ。」'
+          },
+          {
+            gesture: '低い笑い声を漏らし、不敵な笑みを浮かべながらゆっくりと振り返る。',
+            line: '「ふっ、見事な推理だよ。俺の正体にたどり着くとはね……褒めてやろう。」'
+          },
+          {
+            gesture: '奥歯を噛み締め、悔しさを押し殺しながら重い扉へと歩み出す。',
+            line: '「くそっ、あと一歩だったのに……人間の嗅覚も侮れないということか。」'
+          },
+          {
+            gesture: '肩をすくめ、諦めたように両手を広げてみせる。',
+            line: '「やれやれ、お芝居はここまでか。だが、今夜までによく生き残れたものだな。」'
+          }
+        ],
+        female: [
+          {
+            gesture: '顔を歪め、悔しさを滲ませながら後ろへと下がる。',
+            line: '「くっ……まさかここまで見抜かれていたなんて。覚えてなさいよ！」'
+          },
+          {
+            gesture: '口の端に妖艶な笑みを浮かべ、冷ややかな瞳で一同を見渡す。',
+            line: '「ふふっ、大正解よ。あなたたちを欺くのは、とても楽しい時間だったわ。」'
+          },
+          {
+            gesture: '唇を噛み、忌々しそうに視線を逸らして背を向ける。',
+            line: '「信じられない……私の嘘が破られるなんて。次はこうはいかないわよ。」'
+          },
+          {
+            gesture: '静かにため息をつき、諦めたように優雅な一礼をする。',
+            line: '「あらあら、幕引きの時間が来てしまったみたいね。見事な洞察力だわ。」'
+          }
+        ]
+      },
+      '占い師': {
+        male: [
+          {
+            gesture: '深く息を吐き、無念さを押し殺した表情でうなずく。',
+            line: '「無念だ……俺の言葉が届かなかったか。頼む、残った者たちで人狼を仕留めてくれ。」'
+          },
+          {
+            gesture: '天を仰ぎ、悔しそうに拳を握りしめる。',
+            line: '「俺が本物の占い師だったと、いずれわかるはずだ……どうか嘘に惑わされるな！」'
+          },
+          {
+            gesture: '静かに目を閉じ、残される仲間たちへ最後の言葉を託す。',
+            line: '「星のお告げを伝えきれなかったことが心残りだ……皆、真実を見失わないでくれ。」'
+          },
+          {
+            gesture: '苦笑いを浮かべながら、ゆっくりと広間の出口へ向かう。',
+            line: '「偽物に負けるとは情けないな……だが、俺が残した占いの手がかりを無駄にするなよ。」'
+          }
+        ],
+        female: [
+          {
+            gesture: '胸に手を当て、悲しげに目を伏せる。',
+            line: '「そんな……私は本当に占い師なのに。どうか残った皆さんで人狼を見つけて！」'
+          },
+          {
+            gesture: '涙をこらえながら、真っ直ぐに一同を見つめて訴える。',
+            line: '「私の言葉を信じてもらえなかったのね……お願い、嘘をついている人を見抜いて！」'
+          },
+          {
+            gesture: '静かに首を振り、無念の思いを込めて言葉を紡ぐ。',
+            line: '「私がいなくなれば、もう夜の真実を知る術がなくなるわ……どうか気をつけて。」'
+          },
+          {
+            gesture: '寂しげに微笑み、残された人々に祈るように手を合わせる。',
+            line: '「残念だわ……でも、私が占った結果だけはどうか覚えておいてくださいね。」'
+          }
+        ]
+      },
+      '狩人': {
+        male: [
+          {
+            gesture: '深く息をつき、守れなくなる仲間を案じながら席を立つ。',
+            line: '「俺がいなくなれば、夜の護衛が途切れる……頼む、昼のうちに人狼を突き止めてくれ。」'
+          },
+          {
+            gesture: '悔しそうに肩を落とし、残る人々を気遣うように振り返る。',
+            line: '「くそっ、これからが俺の腕の見せ所だったのに……皆、今夜は最大限に警戒してくれ！」'
+          },
+          {
+            gesture: '静かに胸を叩き、覚悟を決めた表情で一歩退く。',
+            line: '「盾となる役目を果たせず申し訳ない。だが、人狼は必ずこの中にいるぞ。」'
+          },
+          {
+            gesture: '鋭い眼差しで館の闇を見据え、重々しく口を開く。',
+            line: '「狩人を失った意味は大きいぞ……明日の夜が来る前に、必ず決着をつけてくれ。」'
+          }
+        ],
+        female: [
+          {
+            gesture: '静かに手を止め、無念の表情で周囲を見渡す。',
+            line: '「私が追放されたら、夜に誰かを守れなくなってしまうわ……どうか気をつけて！」'
+          },
+          {
+            gesture: '悔しそうに唇を噛み、残る仲間たちへ強い視線を送る。',
+            line: '「私こそが狩人だったのに……これ以上犠牲者を出さないよう、必ず人狼を見つけてね。」'
+          },
+          {
+            gesture: '悲しげに目を伏せ、静かに背筋を伸ばして扉へ向かう。',
+            line: '「みんなを守り抜きたかったわ……私の分まで、どうか生き延びてください。」'
+          },
+          {
+            gesture: '心配そうに周囲を見回し、最後の助言を残す。',
+            line: '「今夜からはもう護衛がいないのよ……誰が嘘をついているのか、冷静に見極めて！」'
+          }
+        ]
+      },
+      '村人': {
+        male: [
+          {
+            gesture: '肩を落とし、納得のいかない面持ちで一歩退く。',
+            line: '「俺じゃない……だが決まってしまった以上、逆らうまい。どうか間違えないでくれよ。」'
+          },
+          {
+            gesture: '両手を広げて潔白を訴えながらも、静かに運命を受け入れる。',
+            line: '「参ったな、無実の俺を追放するとは……人狼の思うツボだぞ、目を覚ませ！」'
+          },
+          {
+            gesture: '深くため息をつき、悔しさを滲ませながら広間を後にする。',
+            line: '「信じてくれとは言わないが、俺が人間だったことはすぐに証明されるさ。」'
+          },
+          {
+            gesture: '険しい表情で一同を見渡し、重く言葉を落とす。',
+            line: '「これで村人が一人減ったわけだ……次は絶対に人狼を逃すなよ。」'
+          }
+        ],
+        female: [
+          {
+            gesture: '戸惑いと悲しみの混じった表情で、周囲を見つめる。',
+            line: '「えっ、私じゃないのに……悔しいけれど、みなさんの無事を祈っています。」'
+          },
+          {
+            gesture: '不安そうに胸元を押さえ、声を震わせながら振り返る。',
+            line: '「どうして私が疑われたの……？ 本当の人狼は、まだこの中にいるのよ！」'
+          },
+          {
+            gesture: '悲しげに首を振り、諦めたように静かにうなずく。',
+            line: '「わかりました……でも、私はただの村人です。どうかこれ以上間違えないでください。」'
+          },
+          {
+            gesture: '寂しげな笑みを浮かべ、残された人々に語りかける。',
+            line: '「疑心暗鬼になるのも無理はないわね……でも、どうか冷静さを失わないで。」'
+          }
+        ]
+      }
+    };
+
     function getBanishedReaction(target) {
-      var isFemale = target.gender === 'female';
-      if (target.role === '人狼') {
-        return {
-          gesture: isFemale
-            ? '顔を歪め、悔しさを滲ませながら後ろへと下がる。'
-            : '苦々しく舌打ちをし、鋭い視線を残して席を立つ。',
-          line: isFemale
-            ? '「くっ……まさかここまで見抜かれていたなんて。覚えてなさいよ！」'
-            : '「ちっ……詰めが甘かったか。だが、この館の闇は簡単には消えんぞ。」'
-        };
-      }
-      if (target.role === '占い師') {
-        return {
-          gesture: isFemale
-            ? '胸に手を当て、悲しげに目を伏せる。'
-            : '深く息を吐き、無念さを押し殺した表情でうなずく。',
-          line: isFemale
-            ? '「そんな……私は本当に占い師なのに。どうか残った皆さんで人狼を見つけて！」'
-            : '「無念だ……俺の言葉が届かなかったか。頼む、残った者たちで人狼を仕留めてくれ。」'
-        };
-      }
-      if (target.role === '狩人') {
-        return {
-          gesture: isFemale
-            ? '静かに弓矢の手を止め、無念の表情で周囲を見渡す。'
-            : '深く息をつき、守れなくなる仲間を案じながら席を立つ。',
-          line: isFemale
-            ? '「私が追放されたら、夜に誰かを守れなくなってしまうわ……どうか気をつけて！」'
-            : '「俺がいなくなれば、夜の護衛が途切れる……頼む、昼のうちに人狼を突き止めてくれ。」'
-        };
-      }
-      return {
-        gesture: isFemale
-          ? '戸惑いと悲しみの混じった表情で、周囲を見つめる。'
-          : '肩を落とし、納得のいかない面持ちで一歩退く。',
-        line: isFemale
-          ? '「えっ、私じゃないのに……悔しいけれど、みなさんの無事を祈っています。」'
-          : '「俺じゃない……だが決まってしまった以上、逆らうまい。どうか間違えないでくれよ。」'
-      };
+      var roleKey = banishedReactionPools[target.role] ? target.role : '村人';
+      var genderKey = target.gender === 'female' ? 'female' : 'male';
+      var list = banishedReactionPools[roleKey][genderKey];
+      return list[Math.floor(Math.random() * list.length)];
     }
 
     var speechSupported =
@@ -479,6 +600,16 @@
       {
         title: '薬師',
         bio: '薬草の知識に長け、常に冷静に周囲の体調や変化を観察している。',
+        introLines: {
+          male: [
+            function(p) { return '「薬師をしている' + p.name + 'だ。薬草の調合が本業だが、人の顔色や動揺を見抜くのも得意でね。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。いざという時の手当てはお任せください。まずは落ち着いて話しましょう。」'; }
+          ],
+          female: [
+            function(p) { return '「薬師の' + p.name + 'と申します。こんな吹雪の夜ですから、体調が優れない方がいればいつでも声をかけてくださいね。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。薬草の香りと同じで、嘘にも独特の気配が混じるものなのですよ。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「薬師の目から見ればわかる。' + t + 'は呼吸が浅く、焦りを隠せていないな。」'; },
@@ -493,6 +624,16 @@
       {
         title: '元刑事',
         bio: '鋭い眼光を持ち、人の些細な嘘や視線の泳ぎを見逃さない。',
+        introLines: {
+          male: [
+            function(p) { return '「元刑事の' + p.name + 'だ。現役は退いたが、嘘をつく人間の癖を見抜く勘は鈍っていないつもりだ。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'という。密室での事件には慣れっこだが、できれば穏便に解決したいものだな。」'; }
+          ],
+          female: [
+            function(p) { return '「元刑事の' + p.name + 'よ。どんな小さな矛盾も見逃さないわ。後ろめたいことがないなら協力してちょうだい。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。長年いろんな嘘を見てきたけれど、真実は必ずどこかに現れるものよ。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「長年の勘が告げている。' + t + 'の受け答えには、嘘をつく人間特有の曖昧さがある。」'; },
@@ -507,6 +648,16 @@
       {
         title: '旅の商人',
         bio: '各地を渡り歩いてきた世渡り上手。損得と保身には敏感だ。',
+        introLines: {
+          male: [
+            function(p) { return '「旅の商人の' + p.name + 'と申します。雪宿りのつもりでしたが、とんでもない場に居合わせたようですね。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'さ。商売では相手の本音を見抜くのが命でね、この場でも役に立つはずさ。」'; }
+          ],
+          female: [
+            function(p) { return '「旅の商人をしております' + p.name + 'です。信用が第一の商売ですから、嘘つきを見抜く目には自信がありますわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。生きてこの館を出ることが一番の利益ね、協力しましょう。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「商売柄、人の本音には敏感でね。' + t + 'の言葉は信用に値しない、偽物の響きがするよ。」'; },
@@ -521,6 +672,16 @@
       {
         title: '神父',
         bio: '穏やかな物腰で人々の心を和ませるが、罪に対しては厳しい一面を持つ。',
+        introLines: {
+          male: [
+            function(p) { return '「神父の' + p.name + 'と申します。恐れや疑いに心を奪われぬよう、どうか皆さん冷静にお話ししましょう。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'です。闇に迷う魂を導くのが私の務めですが、今宵は皆で助け合わねばなりませんね。」'; }
+          ],
+          female: [
+            function(p) { return '「教会に仕える' + p.title + 'の' + p.name + 'と申します。どうか穏やかな心を忘れず、真実を見つめましょう。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。偽りの言葉は必ず魂を曇らせます。誠実に向き合いましょうね。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「嘘は魂を曇らせます。' + t + '、あなたの瞳の奥に潜む影を見過ごすわけにはいきません。」'; },
@@ -535,6 +696,16 @@
       {
         title: '猟師',
         bio: '山奥で暮らしてきた寡黙な実力者。獣の気配や夜の物音に敏感。',
+        introLines: {
+          male: [
+            function(p) { return '「猟師の' + p.name + 'だ。普段は山にこもっているが、獣の気配や血の匂いには誰よりも敏感なつもりだ。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'という。人狼だろうが何だろうが、獲物の足跡を追うのは俺の領分だ。」'; }
+          ],
+          female: [
+            function(p) { return '「猟師をしている' + p.name + 'よ。山で獣を相手にしてきたから、夜の気配や危険な相手にはすぐ気づくわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。口数は少ないけれど、いざという時は頼りにしてちょうだい。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「獣の匂いは誤魔化せない。' + t + 'の周りだけ、妙に血の気配が濃いな。」'; },
@@ -549,6 +720,16 @@
       {
         title: '書記官',
         bio: '几帳面な性格で、誰がいつ何を言ったかを細かく記憶している。',
+        introLines: {
+          male: [
+            function(p) { return '「書記官の' + p.name + 'です。皆さんの発言はすべて正確に記録し、矛盾がないか照らし合わせます。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。細かい言質の食い違いを見逃さないのが私の仕事ですので。」'; }
+          ],
+          female: [
+            function(p) { return '「書記官を務めております' + p.name + 'です。誰がいつ何をおっしゃったか、すべて頭に入れておきますわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。言葉の記録をたどれば、嘘をついている方は必ず浮かび上がります。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「記録と照合してみたが、' + t + 'の主張は最初の発言と食い違っているぞ。」'; },
@@ -563,6 +744,16 @@
       {
         title: '鍛冶屋',
         bio: '屈強な体格と真っ直ぐな気性の持ち主。曲がったことが大嫌い。',
+        introLines: {
+          male: [
+            function(p) { return '「鍛冶屋の' + p.name + 'だ！ 小細工や嘘は大嫌いでね、正々堂々と白黒つけようじゃないか。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'という。鉄を鍛えるのと同じで、疑わしい点は徹底的に叩いて確かめるぜ。」'; }
+          ],
+          female: [
+            function(p) { return '「鍛冶屋をやっている' + p.name + 'よ。力仕事なら任せてちょうだい。曲がった真似をする人は許さないわ！」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。真っ直ぐな言葉で話しましょう、隠し事はなしよ。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「真っ直ぐな鉄と歪んだ鉄は叩けばわかる。' + t + '、お前の言葉には歪みがあるな！」'; },
@@ -577,6 +768,16 @@
       {
         title: '占い師の弟子',
         bio: '星読みや古い伝承に詳しく、直感的な発言をすることが多い。',
+        introLines: {
+          male: [
+            function(p) { return '「占い師の弟子の' + p.name + 'です。まだ修行の身ですが、星の巡りや不吉な予兆には敏感なつもりです。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。今夜の吹雪にはただならぬ気配を感じていました……慎重に動きましょう。」'; }
+          ],
+          female: [
+            function(p) { return '「占い師の弟子をしている' + p.name + 'と申します。師匠から教わった星読みの知恵が、きっと役に立つはずですわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。古い伝承にある人狼の物語が現実になるなんて……でも負けません。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「星の巡りが不吉な影を示している……' + t + '、お前の背後に禍々しい気配が漂っているぞ。」'; },
@@ -591,6 +792,16 @@
       {
         title: '宿屋の主人',
         bio: '客の顔色を見るのが仕事。この集まりの全員の素性を気にかけている。',
+        introLines: {
+          male: [
+            function(p) { return '「宿屋の主人をしている' + p.name + 'です。長年いろんな旅人をもてなしてきましたから、人の素性を見る目には自信があります。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。本来なら温かい食事でお迎えしたいところですが、まずは安全を確保しましょう。」'; }
+          ],
+          female: [
+            function(p) { return '「宿屋の女将をしております' + p.name + 'です。お客様のちょっとした表情の変化にもすぐ気づくのが私の取り柄ですわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。騒ぎを起こす方の気配はすぐにわかります、どうか正直にお話しくださいね。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「長年宿を切り盛りしてきたが、' + t + 'のように周囲を値踏みする客は要注意だ。」'; },
@@ -605,6 +816,16 @@
       {
         title: '流浪の楽師',
         bio: '飄々とした態度で場を見守る観察者。皮肉交じりの冗談を好む。',
+        introLines: {
+          male: [
+            function(p) { return '「流浪の楽師の' + p.name + 'さ。吹雪に閉じ込められるのも旅の醍醐味だが、命がけの演奏会は勘弁願いたいね。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。声の調子や言葉のリズムを聴けば、誰が調子外れの嘘をついているかすぐにわかるよ。」'; }
+          ],
+          female: [
+            function(p) { return '「流浪の楽師をしている' + p.name + 'よ。人の声の響きには本音が表れるもの、皆さんの言葉をじっくり聴かせてもらうわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。重苦しい夜だけど、冷静さを失わずに真実の旋律を見つけましょうね。」'; }
+          ]
+        },
         suspectLines: {
           male: [
             function(t) { return '「いやはや、調子外れの旋律が聞こえると思ったら' + t + 'の言い訳だったか。」'; },
@@ -631,7 +852,11 @@
         ],
         lines: {
           male: {
-            introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'だ。事実と筋道を見極めながら、この状況を整理したい。」'; },
+            introPool: [
+              function(p) { return '「私は' + p.title + 'の' + p.name + 'だ。事実と筋道を見極めながら、この状況を整理したい。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'と申します。パニックにならず、一つずつ証拠を積み上げていきましょう。」'; },
+              function(p) { return '「はじめまして、' + p.title + 'の' + p.name + 'だ。感情に流されれば人狼の思うツボだ、冷静に議論しよう。」'; }
+            ],
             suspectPool: [
               function(target) { return '「感情論は抜きにしよう。状況を見る限り、' + target + 'の言動には不自然な点が多い。」'; },
               function(target) { return '「消去法で考えても結論は同じだ。' + target + 'の立ち回りには合理的な説明がつかない。」'; },
@@ -644,7 +869,11 @@
             reportHuman: function(target) { return '「昨晩は' + target + 'を占った。結果は【村人（白）】だ。少なくとも彼は信用していい。」'; }
           },
           female: {
-            introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'です。感情に流されず、冷静に手がかりを整理していきましょう。」'; },
+            introPool: [
+              function(p) { return '「私は' + p.title + 'の' + p.name + 'です。感情に流されず、冷静に手がかりを整理していきましょう。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'と申します。焦りは判断を誤らせますから、一つずつ事実を確かめましょうね。」'; },
+              function(p) { return '「はじめまして、' + p.title + 'の' + p.name + 'よ。誰が本当のことを言っているのか、筋道を立てて見極めましょう。」'; }
+            ],
             suspectPool: [
               function(target) { return '「落ち着いて考えてみましょう。' + target + 'の発言には、筋が通らない点がいくつかあります。」'; },
               function(target) { return '「感情に任せて選ぶべきではありません。客観的に見て、最も不審なのは' + target + 'です。」'; },
@@ -670,7 +899,11 @@
         ],
         lines: {
           male: {
-            introLine: function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と言います。吹雪が怖いですけど、皆さんと協力したいです。」'; },
+            introPool: [
+              function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と言います。吹雪が怖いですけど、皆さんと協力したいです。」'; },
+              function(p) { return '「ぼ、僕は' + p.title + 'の' + p.name + 'です。こんな恐ろしい状況は初めてで……どうか見捨てないでください。」'; },
+              function(p) { return '「えっと、' + p.title + 'の' + p.name + 'と申します。人狼がいるなんて信じたくありませんが、一生懸命考えます。」'; }
+            ],
             suspectPool: [
               function(target) { return '「あ、あの、こんなこと言いたくないんですけど、' + target + 'さんが少し怖くて。」'; },
               function(target) { return '「ち、違っていたらごめんなさい……でも、' + target + 'さんの視線がずっと気になっていたんです。」'; },
@@ -683,7 +916,11 @@
             reportHuman: function(target) { return '「よ、よかった。昨晩' + target + 'さんを占ったら、【村人】でした。」'; }
           },
           female: {
-            introLine: function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と申します。怖いことが起きませんように……よろしくお願いします。」'; },
+            introPool: [
+              function(p) { return '「あ、あの……' + p.title + 'の' + p.name + 'と申します。怖いことが起きませんように……よろしくお願いします。」'; },
+              function(p) { return '「わ、私は' + p.title + 'の' + p.name + 'です。外はすごい吹雪ですし、皆さんと力を合わせて乗り切りたいです。」'; },
+              function(p) { return '「えっと……' + p.title + 'の' + p.name + 'と言います。人狼なんて本当にいるのでしょうか……不安で胸がいっぱいです。」'; }
+            ],
             suspectPool: [
               function(target) { return '「ご、ごめんなさい。こんなこと言いたくないんですけど、' + target + 'さんの様子が少し気になって……」'; },
               function(target) { return '「私なんかが言っていいのか分かりませんけど……' + target + 'さん、さっきから少し不自然じゃありませんか？」'; },
@@ -709,7 +946,11 @@
         ],
         lines: {
           male: {
-            introLine: function(p) { return '「俺は' + p.title + 'の' + p.name + 'だ。隠し事をする奴はすぐにわかる、よろしく頼むぜ。」'; },
+            introPool: [
+              function(p) { return '「俺は' + p.title + 'の' + p.name + 'だ。隠し事をする奴はすぐにわかる、よろしく頼むぜ。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'だ！ ビクビクしていても始まらねぇ、俺たちが先に人狼を突き止めてやろうぜ！」'; },
+              function(p) { return '「俺の名前は' + p.name + '、職業は' + p.title + 'だ。裏切り者には容赦しねぇから覚悟しておけよ。」'; }
+            ],
             suspectPool: [
               function(target) { return '「おい' + target + '。さっきから顔色が悪いぞ。お前が人狼なんだろう、白状しろ。」'; },
               function(target) { return '「回りくどい話はなしだ！ 一番怪しいのは' + target + '、お前しかいねぇ！」'; },
@@ -722,7 +963,11 @@
             reportHuman: function(target) { return '「昨晩は' + target + 'を占ったが、こいつは【村人】だ。俺が保証してやる。」'; }
           },
           female: {
-            introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。ごまかしは許さないわ、よろしくね。」'; },
+            introPool: [
+              function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。ごまかしは許さないわ、よろしくね。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'です！ 怯えている暇なんてないわ、みんなで力を合わせて人狼を追い詰めましょう！」'; },
+              function(p) { return '「私は' + p.name + '、' + p.title + 'をしているわ。嘘をついている人はすぐに見抜いてみせるから！」'; }
+            ],
             suspectPool: [
               function(target) { return '「ちょっと' + target + '。さっきから態度がおかしいじゃない。あなたが人狼なんでしょ？」'; },
               function(target) { return '「はっきり言わせてもらうわ！ 一番怪しいのは' + target + '、あなたよ！」'; },
@@ -748,7 +993,11 @@
         ],
         lines: {
           male: {
-            introLine: function(p) { return '「僕は' + p.title + 'の' + p.name + 'さ。この館でどんなドラマが起きるか、じっくり見せてもらうよ。」'; },
+            introPool: [
+              function(p) { return '「僕は' + p.title + 'の' + p.name + 'さ。この館でどんなドラマが起きるか、じっくり見せてもらうよ。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'という者だ。お互い疑い合うことになるんだろうが、お手柔らかに頼むよ。」'; },
+              function(p) { return '「やあ、僕は' + p.title + 'の' + p.name + '。全員が善人の顔をしているけれど、さて本物は誰かな？」'; }
+            ],
             suspectPool: [
               function(target) { return '「へぇ、' + target + 'は随分と余裕そうだね。何か後ろめたいことでも隠してるのかな。」'; },
               function(target) { return '「おやおや、' + target + 'の立ち回りは見事なものだね。まるで人狼のお手本のようだよ。」'; },
@@ -761,7 +1010,11 @@
             reportHuman: function(target) { return '「昨晩' + target + 'を占ってみたけれど、残念ながら【村人】だったよ。面白みがないね。」'; }
           },
           female: {
-            introLine: function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。この閉ざされた館でどんな化けの皮が剥がれるか、楽しみだわ。」'; },
+            introPool: [
+              function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。この閉ざされた館でどんな化けの皮が剥がれるか、楽しみだわ。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'と申します。みんな立派なことを言っているけれど、本心は顔に出るものよ。」'; },
+              function(p) { return '「あら、ご挨拶が遅れたわね。' + p.title + 'の' + p.name + 'よ。騙し合いなら得意な方だから、よろしくね。」'; }
+            ],
             suspectPool: [
               function(target) { return '「あら、' + target + 'はずいぶん余裕そうね。何か都合の悪いことでも隠しているのかしら。」'; },
               function(target) { return '「ふふ、' + target + 'って本当に上手に立ち回るわね。疑われないコツでも知っているのかしら？」'; },
@@ -781,12 +1034,27 @@
       var gKey = gender === 'female' ? 'female' : 'male';
       var set = (personality && personality.lines && (personality.lines[gKey] || personality.lines.male)) || null;
       if (!set) return '';
+      if (key === 'introLine' && Array.isArray(set.introPool) && set.introPool.length > 0) {
+        var iFn = set.introPool[Math.floor(Math.random() * set.introPool.length)];
+        return iFn(arg1);
+      }
       if (key === 'suspectLine' && Array.isArray(set.suspectPool) && set.suspectPool.length > 0) {
         var fn = set.suspectPool[Math.floor(Math.random() * set.suspectPool.length)];
         return fn(arg1);
       }
       if (typeof set[key] !== 'function') return '';
       return set[key](arg1);
+    }
+
+    function buildNpcIntroLine(npc) {
+      var gKey = npc.gender === 'female' ? 'female' : 'male';
+      var jobDef = jobPool.find(function(j) { return j.title === npc.title; });
+      if (jobDef && jobDef.introLines && jobDef.introLines[gKey] && Math.random() < 0.55) {
+        var jList = jobDef.introLines[gKey];
+        var jFn = jList[Math.floor(Math.random() * jList.length)];
+        return jFn(npc);
+      }
+      return getPersonaLine(npc.personality, npc.gender, 'introLine', npc);
     }
 
     function buildNpcSuspectLine(npc, target) {
@@ -1789,13 +2057,20 @@
       players.forEach(function(p) {
         var speakerLabel = '【' + p.title + ' ' + p.name + '】';
         if (p.isPlayer) {
-          var myIntro = p.gender === 'female'
-            ? '「私は' + p.title + 'の' + p.name + 'です。この館で何が起きているのか、落ち着いて見極めたいと思います。」'
-            : '「私は' + p.title + 'の' + p.name + 'だ。この館で何が起きているのか、落ち着いて見極めたい。」';
+          var myIntrosFemale = [
+            '「私は' + p.title + 'の' + p.name + 'です。この館で何が起きているのか、落ち着いて見極めたいと思います。」',
+            '「' + p.title + 'の' + p.name + 'と申します。吹雪が止むまで、皆さんと協力して真実を探りたいです。」'
+          ];
+          var myIntrosMale = [
+            '「私は' + p.title + 'の' + p.name + 'だ。この館で何が起きているのか、落ち着いて見極めたい。」',
+            '「' + p.title + 'の' + p.name + 'と申します。誰が嘘をついているのか、冷静に見極めていきましょう。」'
+          ];
+          var myPool = p.gender === 'female' ? myIntrosFemale : myIntrosMale;
+          var myIntro = myPool[Math.floor(Math.random() * myPool.length)];
           addLog(speakerLabel + myIntro, 'intro-msg', '館の広間で静かに前へ進み出る。', true, p);
         } else {
-          var npcIntro = getPersonaLine(p.personality, p.gender, 'introLine', p);
-          var npcGesture = p.personality.gestures[0];
+          var npcIntro = buildNpcIntroLine(p);
+          var npcGesture = getRandomGesture(p);
           addLog(speakerLabel + npcIntro, 'intro-msg', npcGesture, true, p);
         }
       });
@@ -2141,6 +2416,8 @@
 
           if (stanceType === 'agree') {
             var agreeLine = '';
+            var agreeKind = 'agree';
+            var agreeTarget = st.target;
             if (st.kind === 'reportHuman' && st.target) {
               agreeLine = me.gender === 'female'
                 ? '「' + spLabel + 'の言う通りね。' + tgLabel + 'を信じてみるべきだわ。」'
@@ -2151,6 +2428,7 @@
               agreeLine = me.gender === 'female'
                 ? '「私も' + spLabel + 'の意見に賛成よ。' + tgLabel + 'には怪しいところがあるわ。」'
                 : '「俺も' + spLabel + 'の意見に賛成だ。' + tgLabel + 'は怪しいと見て間違いない。」';
+              agreeKind = 'suspect';
               suspicionScores[st.target.id] += 2.6;
               suspicionScores[st.speaker.id] -= 0.5;
             } else {
@@ -2162,8 +2440,8 @@
             addLog(speakerLabel + agreeLine, 'declare-msg', 'うなずきながら賛意を示す。', true, me);
             dayStatements.push({
               speaker: me,
-              kind: 'agree',
-              target: st.target,
+              kind: agreeKind,
+              target: agreeTarget,
               summary: me.title + ' ' + me.name + '（あなた）が' + spLabel + 'の意見に賛同した'
             });
           } else {
@@ -2255,7 +2533,7 @@
       );
     }
 
-    // 議論の整理フェーズ（投票ボタンの誤連打防止と状況把握）
+    // 議論の整理フェーズ（疑われ数の集計＋発言要約）
     function showDiscussionSummaryPhase() {
       setBgmMood('suspense');
       addLog('=== ' + day + '日目の議論の整理 ===', 'system', '', true, null);
@@ -2268,12 +2546,50 @@
         ? declaredList.map(function(p) { return p.title + 'の' + p.name + '（' + p.declaredRole + 'CO）'; }).join('、')
         : 'なし';
 
+      // 誰が何名から怪しいと指摘（または人狼報告・反論）されているかを集計
+      var accusersMap = {};
+      aliveList.forEach(function(p) {
+        accusersMap[p.id] = [];
+      });
+
+      dayStatements.forEach(function(st) {
+        if (!st.speaker || !st.target) return;
+        if (st.kind === 'suspect' || st.kind === 'reportWolf' || st.kind === 'disagree') {
+          if (accusersMap[st.target.id]) {
+            var speakerName = st.speaker.title + 'の' + st.speaker.name;
+            if (accusersMap[st.target.id].indexOf(speakerName) === -1) {
+              accusersMap[st.target.id].push(speakerName);
+            }
+          }
+        }
+      });
+
+      var rankedTargets = aliveList.map(function(p) {
+        return {
+          player: p,
+          accusers: accusersMap[p.id] || []
+        };
+      }).sort(function(a, b) {
+        return b.accusers.length - a.accusers.length;
+      });
+
       var summaryLines = [
         '【現在の生存者（' + aliveList.length + '名）】' + aliveNames,
         '【役職を名乗り出ている人物】' + declaredText,
-        '【本日の議論の要点】'
+        '【誰が何名から怪しいと指摘されているか（集計）】'
       ];
 
+      rankedTargets.forEach(function(item) {
+        var label = item.player.title + 'の' + item.player.name;
+        var count = item.accusers.length;
+        if (count > 0) {
+          summaryLines.push('・' + label + '：' + count + '名から指摘（' + item.accusers.join('、') + '）');
+        } else {
+          summaryLines.push('・' + label + '：0名（指摘なし）');
+        }
+      });
+
+      summaryLines.push('【本日の議論の要点】');
       if (dayStatements.length > 0) {
         dayStatements.forEach(function(st) {
           summaryLines.push('・' + st.summary);
