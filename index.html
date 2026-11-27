@@ -32,11 +32,26 @@
     /* オープニング画面 */
     #opening-screen {
       text-align: center;
-      padding: 36px 20px;
+      padding: 28px 20px 36px;
       background: linear-gradient(180deg, #1b202b 0%, #14171f 100%);
       border: 1px solid #3f485c;
       border-radius: 8px;
       cursor: pointer;
+    }
+    .opening-audio-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-width: 620px;
+      margin: 0 auto 22px;
+      padding: 10px 14px;
+      background-color: #101319;
+      border: 1px solid #364154;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      cursor: default;
     }
     .opening-kicker {
       font-size: 0.92rem;
@@ -76,7 +91,7 @@
       margin-bottom: 16px;
     }
 
-    /* 音声・BGM設定パネル（初期設定画面でのみ表示） */
+    /* 音声・BGM設定パネル */
     .audio-bar {
       display: flex;
       align-items: center;
@@ -96,7 +111,8 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    .audio-bar button {
+    .audio-bar button,
+    .opening-audio-bar button {
       margin: 0;
       padding: 8px 14px;
       font-size: 0.9rem;
@@ -360,6 +376,19 @@
   <div class="container">
     <!-- オープニング画面 -->
     <div id="opening-screen" role="region" aria-label="タイトル画面" tabindex="0">
+      <div id="opening-audio-controls" class="opening-audio-bar" role="region" aria-label="タイトル画面のBGM設定">
+        <span>タイトルBGM：</span>
+        <div class="audio-buttons">
+          <button id="opening-bgm-toggle-btn" type="button" class="audio-on" aria-pressed="true">BGM：オン</button>
+          <div class="rate-group" role="group" aria-label="BGM音量">
+            <span class="rate-label">音量：</span>
+            <button id="opening-vol-low" type="button" class="rate-btn" data-vol="low">小</button>
+            <button id="opening-vol-medium" type="button" class="rate-btn active" data-vol="medium">中</button>
+            <button id="opening-vol-high" type="button" class="rate-btn" data-vol="high">大</button>
+          </div>
+        </div>
+      </div>
+
       <div class="opening-kicker">TEXT WEREWOLF MYSTERY</div>
       <div class="opening-title">『マヤカシ』</div>
       <div class="opening-subtitle">— 吹雪の館に潜む、偽りの仮面を見破れ —</div>
@@ -381,6 +410,12 @@
         <span id="audio-status-label">サウンド・読み上げ設定：</span>
         <div class="audio-buttons">
           <button id="bgm-toggle-btn" type="button" class="audio-on" onclick="toggleBgm()" aria-pressed="true">BGM：オン</button>
+          <div class="rate-group" role="group" aria-label="BGM音量">
+            <span class="rate-label">BGM音量：</span>
+            <button id="vol-low" type="button" class="rate-btn" onclick="setBgmVolume('low')">小</button>
+            <button id="vol-medium" type="button" class="rate-btn active" onclick="setBgmVolume('medium')">中</button>
+            <button id="vol-high" type="button" class="rate-btn" onclick="setBgmVolume('high')">大</button>
+          </div>
           <button id="voice-toggle-btn" type="button" class="audio-on" onclick="toggleSpeech()" aria-pressed="true">読み上げ：オン</button>
           <div class="rate-group" role="group" aria-label="読み上げ速度">
             <span class="rate-label">速度：</span>
@@ -458,9 +493,15 @@
       fast: { rate: 1.28, label: '速い' }
     };
 
-    // Web Audio API BGM管理（デフォルトでオン）
+    // Web Audio API BGM管理（デフォルトでオン、音量「中」）
     var audioCtx = null;
     var bgmEnabled = true;
+    var bgmVolumeMode = 'medium';
+    var bgmVolumeMap = {
+      low: { scale: 0.45, label: '小' },
+      medium: { scale: 1.0, label: '中' },
+      high: { scale: 1.65, label: '大' }
+    };
     var bgmTimerId = null;
     var currentBgmMood = 'opening';
     var bgmStep = 0;
@@ -1043,11 +1084,19 @@
     }
 
     var openingScreenEl = document.getElementById('opening-screen');
+    var openingAudioControlsEl = document.getElementById('opening-audio-controls');
+    var openingBgmToggleBtn = document.getElementById('opening-bgm-toggle-btn');
+    var openingVolLowBtn = document.getElementById('opening-vol-low');
+    var openingVolMediumBtn = document.getElementById('opening-vol-medium');
+    var openingVolHighBtn = document.getElementById('opening-vol-high');
     var openingEnterBtn = document.getElementById('opening-enter-btn');
     var gameScreenEl = document.getElementById('game-screen');
     var setupTitleHeadingEl = document.getElementById('setup-title-heading');
     var setupAudioControlsEl = document.getElementById('setup-audio-controls');
     var bgmToggleBtn = document.getElementById('bgm-toggle-btn');
+    var volLowBtn = document.getElementById('vol-low');
+    var volMediumBtn = document.getElementById('vol-medium');
+    var volHighBtn = document.getElementById('vol-high');
     var voiceToggleBtn = document.getElementById('voice-toggle-btn');
     var rateSlowBtn = document.getElementById('rate-slow');
     var rateNormalBtn = document.getElementById('rate-normal');
@@ -1064,14 +1113,23 @@
     var rosterListEl = document.getElementById('roster-list');
     var returnBannerEl = document.getElementById('return-banner');
 
-    function ensureAudioContext() {
+    function getBgmGainScale() {
+      var cfg = bgmVolumeMap[bgmVolumeMode] || bgmVolumeMap.medium;
+      return cfg.scale;
+    }
+
+    function ensureAudioContext(onReady) {
       var AudioCtor = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtor) return null;
       if (!audioCtx) {
         audioCtx = new AudioCtor();
       }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume().catch(function() {});
+      if (audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function') {
+        audioCtx.resume().then(function() {
+          if (typeof onReady === 'function') onReady(audioCtx);
+        }).catch(function() {});
+      } else if (audioCtx.state === 'running' && typeof onReady === 'function') {
+        onReady(audioCtx);
       }
       return audioCtx;
     }
@@ -1097,7 +1155,7 @@
 
       var atk = attack || 0.03;
       var rel = release || Math.max(0.12, duration * 0.85);
-      var maxG = peakGain || 0.095;
+      var maxG = Math.min(0.35, (peakGain || 0.095) * getBgmGainScale());
 
       gain.gain.setValueAtTime(0.0001, startAt);
       gain.gain.linearRampToValueAtTime(maxG, startAt + atk);
@@ -1121,6 +1179,7 @@
       if (!ctx || ctx.state !== 'running') return;
 
       var startAt = ctx.currentTime + (delaySec || 0);
+      var volScale = getBgmGainScale();
 
       if (instrument === 'piano') {
         var osc1 = ctx.createOscillator();
@@ -1140,7 +1199,7 @@
         filter.frequency.setValueAtTime(2400, startAt);
         filter.frequency.exponentialRampToValueAtTime(680, startAt + duration + 0.7);
 
-        var maxG = peakGain || 0.085;
+        var maxG = Math.min(0.32, (peakGain || 0.085) * volScale);
         gain.gain.setValueAtTime(0.0001, startAt);
         gain.gain.linearRampToValueAtTime(maxG, startAt + 0.015);
         gain.gain.exponentialRampToValueAtTime(maxG * 0.42, startAt + 0.25);
@@ -1184,7 +1243,7 @@
         vFilter.type = 'lowpass';
         vFilter.frequency.setValueAtTime(1750, startAt);
 
-        var vMax = peakGain || 0.078;
+        var vMax = Math.min(0.30, (peakGain || 0.078) * volScale);
         vGain.gain.setValueAtTime(0.0001, startAt);
         vGain.gain.linearRampToValueAtTime(vMax, startAt + 0.14);
         vGain.gain.setValueAtTime(vMax * 0.92, startAt + Math.max(0.16, duration * 0.75));
@@ -1231,7 +1290,7 @@
         fFilter.type = 'lowpass';
         fFilter.frequency.setValueAtTime(2600, startAt);
 
-        var fMax = peakGain || 0.072;
+        var fMax = Math.min(0.28, (peakGain || 0.072) * volScale);
         fGain.gain.setValueAtTime(0.0001, startAt);
         fGain.gain.linearRampToValueAtTime(fMax, startAt + 0.11);
         fGain.gain.setValueAtTime(fMax * 0.9, startAt + Math.max(0.14, duration * 0.78));
@@ -1471,6 +1530,84 @@
       return note;
     }
 
+    function runBgmTick() {
+      if (!bgmEnabled) return;
+      var ctx = ensureAudioContext();
+      if (!ctx || ctx.state !== 'running') return;
+
+      var activeMood = currentBgmMood;
+
+      if (activeMood === 'opening') {
+        var idx = bgmStep % titlePianoArp.length;
+        var pFreq = titlePianoArp[idx];
+        var vFreq = titleViolinLead[idx];
+        var vDur = titleViolinDur[idx] || 0.85;
+        var fFreq = titleFluteMelody[idx];
+        var fDur = titleFluteDur[idx] || 0.85;
+
+        if (pFreq > 0) {
+          var isRootBeat = idx % 4 === 0;
+          playExpressiveInstrument('piano', pFreq, isRootBeat ? 0.95 : 0.55, isRootBeat ? 0.088 : 0.068, 0);
+        }
+        if (vFreq > 0) {
+          playExpressiveInstrument('violin', vFreq, vDur, 0.072, 0.02);
+        }
+        if (fFreq > 0) {
+          playExpressiveInstrument('flute', fFreq, fDur, 0.068, 0.03);
+        }
+        bgmStep++;
+        return;
+      }
+
+      if (activeMood === 'ending') {
+        var eIdx = bgmStep % endingPianoSeq.length;
+        var epFreq = endingPianoSeq[eIdx];
+        var evFreq = endingViolinSeq[eIdx];
+        var efFreq = endingFluteSeq[eIdx];
+
+        if (epFreq > 0) {
+          var eRoot = eIdx % 4 === 0;
+          playExpressiveInstrument('piano', epFreq, eRoot ? 1.05 : 0.62, eRoot ? 0.085 : 0.065, 0);
+        }
+        if (evFreq > 0) {
+          playExpressiveInstrument('violin', evFreq, 1.15, 0.068, 0.02);
+        }
+        if (efFreq > 0) {
+          playExpressiveInstrument('flute', efFreq, 1.05, 0.064, 0.04);
+        }
+        bgmStep++;
+        return;
+      }
+
+      var cfg = turnMelodyConfigs[activeMood] || turnMelodyConfigs.calm;
+      var bIdx = bgmStep % cfg.bassNotes.length;
+      var fixedBass = cfg.bassNotes[bIdx];
+      var randomMel = pickRandomMelodyNote(cfg.melodyPool, 0);
+
+      if (fixedBass > 0) {
+        playTone(fixedBass, cfg.bassDur, cfg.bassType, cfg.bassGain, 0.03, cfg.bassDur * 0.75, cfg.filter, 0);
+      }
+
+      if (randomMel > 0) {
+        var isDespair = activeMood === 'despair';
+        playTone(
+          randomMel,
+          cfg.melodyDur,
+          cfg.melodyType,
+          cfg.melodyGain,
+          isDespair ? 0.015 : 0.025,
+          isDespair ? 0.35 : 0.55,
+          cfg.filter,
+          0
+        );
+        if (isDespair && bgmStep % 2 === 0) {
+          playTone(randomMel * 1.05946, 0.28, 'sawtooth', 0.038, 0.01, 0.25, 920, 0.03);
+        }
+      }
+
+      bgmStep++;
+    }
+
     function startBgmLoop() {
       if (bgmTimerId !== null) {
         clearInterval(bgmTimerId);
@@ -1478,93 +1615,16 @@
       }
       if (!bgmEnabled) return;
 
-      ensureAudioContext();
-      var mood = currentBgmMood;
-      var pat = bgmPatterns[mood] || bgmPatterns.calm;
+      var pat = bgmPatterns[currentBgmMood] || bgmPatterns.calm;
       bgmStep = 0;
-      var lastMelFreq = 0;
 
-      var tick = function() {
+      ensureAudioContext(function() {
         if (!bgmEnabled) return;
-        var ctx = ensureAudioContext();
-        if (!ctx || ctx.state !== 'running') return;
+        runBgmTick();
+      });
 
-        var activeMood = currentBgmMood;
-
-        if (activeMood === 'opening') {
-          var idx = bgmStep % titlePianoArp.length;
-          var pFreq = titlePianoArp[idx];
-          var vFreq = titleViolinLead[idx];
-          var vDur = titleViolinDur[idx] || 0.85;
-          var fFreq = titleFluteMelody[idx];
-          var fDur = titleFluteDur[idx] || 0.85;
-
-          if (pFreq > 0) {
-            var isRootBeat = idx % 4 === 0;
-            playExpressiveInstrument('piano', pFreq, isRootBeat ? 0.95 : 0.55, isRootBeat ? 0.088 : 0.068, 0);
-          }
-          if (vFreq > 0) {
-            playExpressiveInstrument('violin', vFreq, vDur, 0.072, 0.02);
-          }
-          if (fFreq > 0) {
-            playExpressiveInstrument('flute', fFreq, fDur, 0.068, 0.03);
-          }
-          bgmStep++;
-          return;
-        }
-
-        if (activeMood === 'ending') {
-          var eIdx = bgmStep % endingPianoSeq.length;
-          var epFreq = endingPianoSeq[eIdx];
-          var evFreq = endingViolinSeq[eIdx];
-          var efFreq = endingFluteSeq[eIdx];
-
-          if (epFreq > 0) {
-            var eRoot = eIdx % 4 === 0;
-            playExpressiveInstrument('piano', epFreq, eRoot ? 1.05 : 0.62, eRoot ? 0.085 : 0.065, 0);
-          }
-          if (evFreq > 0) {
-            playExpressiveInstrument('violin', evFreq, 1.15, 0.068, 0.02);
-          }
-          if (efFreq > 0) {
-            playExpressiveInstrument('flute', efFreq, 1.05, 0.064, 0.04);
-          }
-          bgmStep++;
-          return;
-        }
-
-        var cfg = turnMelodyConfigs[activeMood] || turnMelodyConfigs.calm;
-        var bIdx = bgmStep % cfg.bassNotes.length;
-        var fixedBass = cfg.bassNotes[bIdx];
-        var randomMel = pickRandomMelodyNote(cfg.melodyPool, lastMelFreq);
-        lastMelFreq = randomMel;
-
-        if (fixedBass > 0) {
-          playTone(fixedBass, cfg.bassDur, cfg.bassType, cfg.bassGain, 0.03, cfg.bassDur * 0.75, cfg.filter, 0);
-        }
-
-        if (randomMel > 0) {
-          var isDespair = activeMood === 'despair';
-          playTone(
-            randomMel,
-            cfg.melodyDur,
-            cfg.melodyType,
-            cfg.melodyGain,
-            isDespair ? 0.015 : 0.025,
-            isDespair ? 0.35 : 0.55,
-            cfg.filter,
-            0
-          );
-          if (isDespair && bgmStep % 2 === 0) {
-            playTone(randomMel * 1.05946, 0.28, 'sawtooth', 0.038, 0.01, 0.25, 920, 0.03);
-          }
-        }
-
-        bgmStep++;
-      };
-
-      tick();
-      bgmTimerId = setInterval(tick, pat.intervalMs);
+      runBgmTick();
+      bgmTimerId = setInterval(runBgmTick, pat.intervalMs);
     }
 
     function setBgmMood(mood) {
@@ -1576,20 +1636,22 @@
       }
     }
 
+    function setBgmVolume(mode) {
+      if (!bgmVolumeMap[mode]) return;
+      bgmVolumeMode = mode;
+      updateAudioButtonsUI();
+      if (bgmEnabled) {
+        ensureAudioContext(function() {
+          playTone(440, 0.14, 'triangle', 0.08, 0.01, 0.14, 1800, 0);
+        });
+      }
+    }
+
     function toggleBgm() {
       bgmEnabled = !bgmEnabled;
       updateAudioButtonsUI();
       if (bgmEnabled) {
-        var ctx = ensureAudioContext();
-        if (ctx && typeof ctx.resume === 'function') {
-          ctx.resume().then(function() {
-            startBgmLoop();
-          }).catch(function() {
-            startBgmLoop();
-          });
-        } else {
-          startBgmLoop();
-        }
+        startBgmLoop();
       } else {
         if (bgmTimerId !== null) {
           clearInterval(bgmTimerId);
@@ -1599,17 +1661,41 @@
     }
 
     function updateAudioButtonsUI() {
-      if (!bgmToggleBtn || !voiceToggleBtn) return;
+      var bgmLabel = bgmEnabled ? 'BGM：オン' : 'BGM：オフ';
+      var bgmClass = bgmEnabled ? 'audio-on' : 'audio-off';
+      var bgmPressed = bgmEnabled ? 'true' : 'false';
 
-      if (bgmEnabled) {
-        bgmToggleBtn.textContent = 'BGM：オン';
-        bgmToggleBtn.className = 'audio-on';
-        bgmToggleBtn.setAttribute('aria-pressed', 'true');
-      } else {
-        bgmToggleBtn.textContent = 'BGM：オフ';
-        bgmToggleBtn.className = 'audio-off';
-        bgmToggleBtn.setAttribute('aria-pressed', 'false');
+      if (bgmToggleBtn) {
+        bgmToggleBtn.textContent = bgmLabel;
+        bgmToggleBtn.className = bgmClass;
+        bgmToggleBtn.setAttribute('aria-pressed', bgmPressed);
       }
+      if (openingBgmToggleBtn) {
+        openingBgmToggleBtn.textContent = bgmLabel;
+        openingBgmToggleBtn.className = bgmClass;
+        openingBgmToggleBtn.setAttribute('aria-pressed', bgmPressed);
+      }
+
+      var volPairs = [
+        { mode: 'low', gameBtn: volLowBtn, openBtn: openingVolLowBtn },
+        { mode: 'medium', gameBtn: volMediumBtn, openBtn: openingVolMediumBtn },
+        { mode: 'high', gameBtn: volHighBtn, openBtn: openingVolHighBtn }
+      ];
+      volPairs.forEach(function(item) {
+        var active = bgmVolumeMode === item.mode;
+        var cls = 'rate-btn' + (active ? ' active' : '');
+        var pressed = active ? 'true' : 'false';
+        if (item.gameBtn) {
+          item.gameBtn.className = cls;
+          item.gameBtn.setAttribute('aria-pressed', pressed);
+        }
+        if (item.openBtn) {
+          item.openBtn.className = cls;
+          item.openBtn.setAttribute('aria-pressed', pressed);
+        }
+      });
+
+      if (!voiceToggleBtn) return;
 
       if (!speechSupported) {
         voiceToggleBtn.textContent = '読み上げ：非対応ブラウザ';
@@ -1727,20 +1813,6 @@
       addLog('操作案内：' + hintText, 'action-hint-log', '', true, null);
     }
 
-    function unlockAndStartOpeningBgm() {
-      if (!bgmEnabled) return;
-      var ctx = ensureAudioContext();
-      if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
-        ctx.resume().then(function() {
-          if (screenState === 'opening' && bgmTimerId === null) {
-            startBgmLoop();
-          }
-        }).catch(function() {});
-      } else if (screenState === 'opening' && bgmTimerId === null) {
-        startBgmLoop();
-      }
-    }
-
     function goToSetupScreen() {
       stopSpeech();
       ensureAudioContext();
@@ -1767,8 +1839,29 @@
       logEl.innerHTML = '';
       controlsEl.innerHTML = '<button id="start-btn" type="button" onclick="prepareTutorialChoice()">ゲームを始める</button>';
       statusEl.textContent = '準備画面：名前と肩書きを入力して開始してください';
+      updateAudioButtonsUI();
       openingScreenEl.focus();
     }
+
+    if (openingAudioControlsEl) {
+      openingAudioControlsEl.addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+    }
+    if (openingBgmToggleBtn) {
+      openingBgmToggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleBgm();
+      });
+    }
+    [openingVolLowBtn, openingVolMediumBtn, openingVolHighBtn].forEach(function(btn) {
+      if (!btn) return;
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var vol = btn.getAttribute('data-vol');
+        setBgmVolume(vol);
+      });
+    });
 
     openingEnterBtn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1776,7 +1869,7 @@
     });
 
     openingScreenEl.addEventListener('click', function(e) {
-      if (e.target && e.target.closest && e.target.closest('button')) {
+      if (e.target && e.target.closest && (e.target.closest('button') || e.target.closest('#opening-audio-controls'))) {
         return;
       }
       goToSetupScreen();
@@ -1785,16 +1878,12 @@
     // ブラウザの自動再生制限対策：最初のユーザー操作時に即座にオーディオを有効化
     ['pointerdown', 'keydown', 'touchstart'].forEach(function(evtName) {
       document.addEventListener(evtName, function() {
-        if (bgmEnabled) {
-          var ctx = ensureAudioContext();
-          if (ctx && ctx.state === 'suspended') {
-            ctx.resume().then(function() {
-              if (bgmTimerId === null) startBgmLoop();
-            }).catch(function() {});
-          } else if (bgmTimerId === null) {
+        if (!bgmEnabled) return;
+        ensureAudioContext(function() {
+          if (bgmEnabled && bgmTimerId === null) {
             startBgmLoop();
           }
-        }
+        });
       }, { passive: true });
     });
 
@@ -1810,6 +1899,8 @@
       if (e.isComposing) return;
       if (e.key === 'Enter' || e.keyCode === 13) {
         if (screenState === 'opening') {
+          var activeTag = document.activeElement ? document.activeElement.tagName : '';
+          if (activeTag === 'BUTTON') return;
           e.preventDefault();
           goToSetupScreen();
         } else if (screenState === 'ended') {
