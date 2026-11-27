@@ -64,6 +64,14 @@
       padding-bottom: 8px;
       border-bottom: 1px solid #444;
     }
+    .top-bar.bottom-bar {
+      margin-top: 20px;
+      margin-bottom: 0;
+      padding-top: 12px;
+      padding-bottom: 4px;
+      border-bottom: none;
+      border-top: 1px solid #444;
+    }
     .audio-controls {
       display: flex;
       flex-wrap: wrap;
@@ -240,7 +248,7 @@
   </div>
 
   <div id="game-screen" style="display: none;">
-    <div class="top-bar">
+    <div id="header-bar" class="top-bar">
       <h1>マヤカシ</h1>
       <div class="audio-controls" role="group" aria-label="音声とBGMの設定">
         <button id="bgm-toggle-btn" class="audio-on" type="button" aria-pressed="true" onclick="toggleBgm()">
@@ -524,7 +532,7 @@
           },
           {
             gesture: '険しい表情で一同を見渡し、重く言葉を落とす。',
-            line: '「これで村人が一人減ったわけだ……次は絶対に人狼を逃すなよ。」'
+            line: '「これで村人が一人減ったわけだ……次は絶対に人も逃すなよ。」'
           }
         ],
         female: [
@@ -547,6 +555,7 @@
         ]
       }
     };
+    banishedReactionPools['村人'].male[3].line = '「これで村人が一人減ったわけだ……次は絶対に人狼を逃すなよ。」';
 
     function getBanishedReaction(target) {
       var roleKey = banishedReactionPools[target.role] ? target.role : '村人';
@@ -1094,6 +1103,7 @@
     var openingEnterBtn = document.getElementById('opening-enter-btn');
     var openingBgmBtn = document.getElementById('opening-bgm-btn');
     var gameScreenEl = document.getElementById('game-screen');
+    var headerBarEl = document.getElementById('header-bar');
     var bgmToggleBtn = document.getElementById('bgm-toggle-btn');
     var voiceToggleBtn = document.getElementById('voice-toggle-btn');
     var rateSlowBtn = document.getElementById('rate-slow');
@@ -1110,6 +1120,21 @@
     var rosterSectionEl = document.getElementById('roster-section');
     var rosterListEl = document.getElementById('roster-list');
     var returnBannerEl = document.getElementById('return-banner');
+
+    // 本編以降はタイトル・BGM・読み上げ・速度ボタンを画面一番下へ配置し、
+    // スクリーンリーダーの「ページ先頭から全文読み上げ」でログ本文がすぐ読まれるようにする
+    function setMainChromePlacement(isMainGameplay) {
+      if (!headerBarEl || !gameScreenEl) return;
+      if (isMainGameplay) {
+        headerBarEl.classList.add('bottom-bar');
+        gameScreenEl.appendChild(headerBarEl);
+      } else {
+        headerBarEl.classList.remove('bottom-bar');
+        if (gameScreenEl.firstChild !== headerBarEl) {
+          gameScreenEl.insertBefore(headerBarEl, gameScreenEl.firstChild);
+        }
+      }
+    }
 
     function ensureAudioContext() {
       var AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -1772,6 +1797,7 @@
       stopSpeech();
       ensureAudioContext();
       setBgmMood('calm');
+      setMainChromePlacement(false);
       screenState = 'playing';
       openingScreenEl.style.display = 'none';
       gameScreenEl.style.display = 'block';
@@ -1787,6 +1813,7 @@
       lastGuardedTargetId = null;
       storyChronicle = [];
       setBgmMood('opening');
+      setMainChromePlacement(false);
       gameScreenEl.style.display = 'none';
       openingScreenEl.style.display = 'block';
       updateAudioButtonsUI();
@@ -1945,6 +1972,7 @@
     function prepareTutorialChoice() {
       ensureAudioContext();
       setBgmMood('calm');
+      setMainChromePlacement(false);
       clearLog();
       day = 1;
       lastVictimSceneIndex = -1;
@@ -2023,6 +2051,7 @@
     }
 
     function showTutorialAndStart() {
+      setMainChromePlacement(false);
       clearLog();
       var guideText =
         '【「マヤカシ」の進め方（全' + TOTAL_PLAYERS + '名・人狼1名／占い師1名／狩人1名／村人4名）】\n' +
@@ -2036,6 +2065,7 @@
     }
 
     function beginMainGame() {
+      setMainChromePlacement(true);
       setBgmMood('calm');
       clearLog();
       addLog('『マヤカシ』 - 吹雪によって外界と閉ざされた古い館。この' + players.length + '人の中に、夜な夜な人を襲う【人狼】が1人紛れ込んでいる。', 'system', '', true, null);
@@ -2048,6 +2078,7 @@
     }
 
     function startIntroductions() {
+      setMainChromePlacement(true);
       setBgmMood('calm');
       clearLog();
       addLog('=== 全員集合：自己紹介（' + players.length + '名） ===', 'system', '', true, null);
@@ -2080,6 +2111,7 @@
     }
 
     function startDayPhase() {
+      setMainChromePlacement(true);
       if (evaluateGameOutcome('other')) {
         return;
       }
@@ -2532,8 +2564,8 @@
       );
     }
 
-    // 議論の整理フェーズ（生存者・名乗り出た役職・疑われ人数の集計のみシンプルに表示）
     function showDiscussionSummaryPhase() {
+      setMainChromePlacement(true);
       setBgmMood('suspense');
       addLog('=== ' + day + '日目の議論の整理 ===', 'system', '', true, null);
 
@@ -2593,6 +2625,7 @@
     }
 
     function startVotePhase() {
+      setMainChromePlacement(true);
       if (!players[0].alive) {
         executeVote(null);
         return;
@@ -2627,6 +2660,7 @@
     }
 
     function executeVote(playerChoice) {
+      setMainChromePlacement(true);
       setBgmMood('suspense');
       clearLog();
       addLog('=== ' + day + '日目の投票結果 ===', 'system', '', true, null);
@@ -2715,6 +2749,7 @@
     }
 
     function startNightPhase() {
+      setMainChromePlacement(true);
       setBgmMood('night');
       clearLog();
       updateStatus();
@@ -2783,6 +2818,7 @@
     }
 
     function runHunterAndWolfNight(playerGuardedId) {
+      setMainChromePlacement(true);
       setBgmMood('night');
       var guardedTargetId = playerGuardedId;
 
@@ -2865,6 +2901,7 @@
     }
 
     function evaluateGameOutcome(phase) {
+      setMainChromePlacement(true);
       var aliveWolves = players.filter(function(p) { return p.alive && p.role === '人狼'; });
       var aliveHumans = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
       var wolves = aliveWolves.length;
@@ -2938,6 +2975,7 @@
 
     function showEndingStory() {
       if (!pendingEndInfo) return;
+      setMainChromePlacement(true);
       setBgmMood('ending');
       clearLog();
 
@@ -3009,6 +3047,7 @@
     }
 
     function endGame(resultMessage, mood, isPlayerWin) {
+      setMainChromePlacement(true);
       screenState = 'ended';
       setBgmMood(mood || 'victory');
       if (isPlayerWin) {
