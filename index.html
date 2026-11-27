@@ -6,189 +6,325 @@
   <title>マヤカシ - テキスト人狼ゲーム</title>
   <style>
     body {
-      font-family: sans-serif;
-      line-height: 1.65;
-      max-width: 680px;
-      margin: 20px auto;
-      padding: 0 15px;
-      background-color: #1a1a2e;
-      color: #eaeaea;
+      font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background-color: #16181d;
+      color: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.75;
+    }
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      background-color: #21252d;
+      padding: 26px;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
     }
     h1 {
-      font-size: 1.5rem;
-      margin: 0 0 12px 0;
-    }
-    h2 {
-      font-size: 1.1rem;
+      font-size: 1.55rem;
       margin-top: 0;
-      margin-bottom: 10px;
-      color: #ffd369;
+      border-bottom: 1px solid #3c4252;
+      padding-bottom: 10px;
+      letter-spacing: 0.05em;
     }
+
+    /* オープニング画面 */
     #opening-screen {
-      background: #16213e;
-      border: 2px solid #4ecca3;
-      border-radius: 8px;
-      padding: 32px 18px;
       text-align: center;
+      padding: 36px 20px;
+      background: linear-gradient(180deg, #1b202b 0%, #14171f 100%);
+      border: 1px solid #3f485c;
+      border-radius: 8px;
       cursor: pointer;
-      margin-top: 16px;
+    }
+    .opening-kicker {
+      font-size: 0.92rem;
+      color: #93c5fd;
+      letter-spacing: 0.2em;
+      margin-bottom: 8px;
     }
     .opening-title {
-      font-size: 2.2rem;
+      font-size: 2.5rem;
       font-weight: bold;
-      letter-spacing: 0.15em;
-      color: #ffd369;
-      margin-bottom: 14px;
+      color: #ffffff;
+      margin: 8px 0 14px;
+      letter-spacing: 0.18em;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
     }
-    .opening-sub {
-      color: #cbd5e1;
-      margin-bottom: 20px;
-      font-size: 1rem;
+    .opening-subtitle {
+      font-size: 1.05rem;
+      color: #d1d5db;
+      margin-bottom: 24px;
+    }
+    .opening-story {
+      text-align: left;
+      max-width: 620px;
+      margin: 0 auto 28px;
+      padding: 18px 20px;
+      background-color: #101319;
+      border-left: 4px solid #60a5fa;
+      border-radius: 6px;
+      color: #e5e7eb;
+      font-size: 0.98rem;
+      line-height: 1.85;
     }
     .opening-prompt {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: bold;
-      color: #4ecca3;
-      margin-bottom: 20px;
+      color: #fde68a;
+      margin-bottom: 16px;
     }
-    #game-screen {
-      display: none;
-    }
-    .setup-audio-box {
-      padding-top: 8px;
-      border-top: 1px solid #2d3e66;
-    }
-    .setup-audio-title {
-      font-weight: bold;
-      font-size: 0.95rem;
-      margin-bottom: 8px;
-      color: #ffd369;
-    }
-    .audio-controls {
+
+    /* 音声・BGM設定パネル（初期設定画面でのみ表示） */
+    .audio-bar {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      background-color: #181c23;
+      padding: 12px 14px;
+      border-radius: 6px;
+      border: 1px solid #353b48;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+    }
+    .audio-buttons {
+      display: flex;
+      gap: 8px;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+    }
+    .audio-bar button {
+      margin: 0;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+    }
+    .audio-on {
+      background-color: #059669;
+    }
+    .audio-on:hover {
+      background-color: #047857;
+    }
+    .audio-off {
+      background-color: #4b5563;
+    }
+    .audio-off:hover {
+      background-color: #374151;
     }
     .rate-group {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: #0f3460;
-      padding: 4px 8px;
-      border-radius: 5px;
-      border: 1px solid #445;
+      background-color: #101318;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid #374151;
     }
     .rate-label {
       font-size: 0.85rem;
       color: #cbd5e1;
-      margin-right: 2px;
+      margin: 0 4px;
     }
-    button.rate-btn {
-      padding: 6px 10px;
+    .rate-group button.rate-btn {
+      padding: 5px 10px;
       font-size: 0.85rem;
-      background-color: #334155;
-      color: #e2e8f0;
+      background-color: #2d3340;
+      color: #e5e7eb;
     }
-    button.rate-btn.active {
-      background-color: #ffd369;
-      color: #111827;
-      font-weight: bold;
+    .rate-group button.rate-btn:hover {
+      background-color: #3f4756;
     }
-    #status {
-      background: #16213e;
-      padding: 12px 15px;
-      border-radius: 5px;
-      margin-bottom: 15px;
-      font-weight: bold;
-      border-left: 4px solid #e94560;
+    .rate-group button.rate-btn.active {
+      background-color: #2563eb;
+      color: #ffffff;
     }
-    #log {
-      background: #0f3460;
-      padding: 15px;
-      border-radius: 5px;
-      height: 360px;
-      overflow-y: auto;
-      margin-bottom: 15px;
-      border: 1px solid #334;
-    }
-    .log-entry {
-      margin-bottom: 12px;
-      border-bottom: 1px dashed #2a4d7a;
-      padding-bottom: 8px;
-    }
-    .system { color: #ffd369; font-weight: bold; }
-    .declare-msg { color: #4ecca3; font-weight: bold; }
-    .suspect-msg { color: #ff9a76; }
-    .intro-msg { color: #e2e8f0; }
-    .ending-msg { color: #fde68a; background: #16213e; padding: 10px 12px; border-radius: 4px; border-left: 3px solid #ffd369; }
-    .summary-msg { color: #e0f2fe; background: #16213e; padding: 10px 12px; border-radius: 4px; border-left: 3px solid #38bdf8; white-space: pre-line; }
-    .guide-msg { color: #e2e8f0; background: #16213e; padding: 10px; border-radius: 4px; white-space: pre-line; }
-    .action-hint-log { color: #93c5fd; font-weight: bold; }
-    .gesture {
-      color: #a8b2d1;
-      font-size: 0.92rem;
-      display: block;
-      margin-bottom: 2px;
-    }
+
     .setup-box {
-      background: #16213e;
-      padding: 15px;
-      border-radius: 5px;
-      margin-bottom: 15px;
+      background-color: #1a1e26;
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid #3c4252;
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
-    .setup-box label {
+    .setup-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .setup-row label {
       font-weight: bold;
+      min-width: 150px;
+    }
+    .setup-row input[type="text"],
+    .setup-row select {
+      flex: 1;
+      min-width: 200px;
+      padding: 9px 12px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #555e70;
+      background-color: #101318;
+      color: #ffffff;
+    }
+    .setup-row input[type="text"]:focus,
+    .setup-row select:focus {
+      outline: 2px solid #60a5fa;
+      border-color: #60a5fa;
+    }
+    .setup-note {
+      font-size: 0.88rem;
+      color: #b4bcc8;
+      margin: 0;
+    }
+    #status {
+      background-color: #2c313c;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-weight: bold;
+      font-size: 1.02rem;
+    }
+    #log {
+      background-color: #121419;
+      border: 1px solid #353b48;
+      padding: 18px;
+      height: 360px;
+      overflow-y: auto;
+      border-radius: 6px;
+      margin-bottom: 18px;
+      white-space: pre-wrap;
+    }
+    .log-entry {
+      margin-bottom: 13px;
+      padding-bottom: 11px;
+      border-bottom: 1px solid #262b36;
+    }
+    .log-entry:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .gesture {
+      color: #a3b1c6;
+      font-style: italic;
+      display: block;
+      margin-bottom: 3px;
       font-size: 0.95rem;
     }
-    .setup-box input,
-    .setup-box select {
-      padding: 8px 10px;
-      font-size: 1rem;
-      border-radius: 4px;
-      border: 1px solid #445;
-      background-color: #0f3460;
-      color: #fff;
+    .system {
+      color: #60a5fa;
+      font-weight: bold;
     }
-    .actions {
+    .action-hint-log {
+      color: #fcd34d;
+      font-weight: bold;
+      background-color: #1e2430;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+    .guide-msg {
+      color: #e2e8f0;
+      background-color: #1b222c;
+      border-left: 4px solid #38bdf8;
+      padding: 12px 14px;
+      border-radius: 4px;
+    }
+    .summary-msg {
+      color: #f3f4f6;
+      background-color: #1a2232;
+      border-left: 4px solid #818cf8;
+      padding: 12px 14px;
+      border-radius: 4px;
+    }
+    .ending-msg {
+      color: #f8fafc;
+      background-color: #191e29;
+      border-left: 4px solid #a78bfa;
+      padding: 12px 14px;
+      border-radius: 4px;
+      line-height: 1.85;
+    }
+    .intro-msg {
+      color: #93c5fd;
+    }
+    .declare-msg {
+      color: #fbbf24;
+      font-weight: bold;
+    }
+    .suspect-msg {
+      color: #f87171;
+    }
+    .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
       margin-bottom: 16px;
-      justify-content: center;
-    }
-    #game-screen .actions {
-      justify-content: flex-start;
     }
     button {
-      padding: 11px 18px;
-      font-size: 1rem;
-      cursor: pointer;
-      background-color: #e94560;
-      color: white;
+      background-color: #2563eb;
+      color: #ffffff;
       border: none;
-      border-radius: 5px;
-      min-height: 44px;
-      touch-action: manipulation;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    button:hover, button:focus {
-      background-color: #ff5c77;
-      outline: 2px solid #ffd369;
+    button:hover {
+      background-color: #1d4ed8;
     }
-    button.secondary { background-color: #394867; }
-    button.secondary:hover, button.secondary:focus { background-color: #4f628e; }
-    button.declare-btn { background-color: #218c74; }
-    button.declare-btn:hover, button.declare-btn:focus { background-color: #33d9b2; color: #111; }
-    button.audio-on { background-color: #218c74; color: #ffffff; }
-    button.audio-off { background-color: #475569; color: #ffffff; }
+    button:focus {
+      outline: 3px solid #93c5fd;
+      outline-offset: 2px;
+    }
+    button.secondary {
+      background-color: #4b5563;
+    }
+    button.secondary:hover {
+      background-color: #374151;
+    }
+    button.declare-btn {
+      background-color: #b45309;
+    }
+    button.declare-btn:hover {
+      background-color: #92400e;
+    }
+
+    #return-banner {
+      display: none;
+      margin-top: 12px;
+      padding: 14px;
+      background-color: #1e293b;
+      border: 1px solid #60a5fa;
+      border-radius: 6px;
+      text-align: center;
+      color: #fde68a;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* 参加者名簿（肩書き・背景パネル） */
     #roster-section {
-      background: #16213e;
-      padding: 15px;
-      border-radius: 5px;
-      border: 1px solid #334;
+      display: none;
+      background-color: #1a1e26;
+      border: 1px solid #3c4252;
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-top: 14px;
+    }
+    #roster-section h2 {
+      font-size: 1.05rem;
+      margin: 0 0 10px 0;
+      color: #cbd5e1;
+      border-bottom: 1px solid #323846;
+      padding-bottom: 6px;
     }
     .roster-list {
       list-style: none;
@@ -199,166 +335,374 @@
       gap: 8px;
     }
     .roster-item {
-      background: #0f3460;
-      padding: 10px 12px;
-      border-radius: 4px;
-      border-left: 4px solid #4ecca3;
+      background-color: #12151b;
+      border: 1px solid #2d3340;
+      border-radius: 5px;
+      padding: 8px 12px;
+      font-size: 0.92rem;
     }
     .roster-item.dead {
       opacity: 0.6;
-      border-left-color: #666;
+      border-color: #4b2c2c;
     }
     .roster-header {
       font-weight: bold;
+      color: #e2e8f0;
     }
     .roster-desc {
-      font-size: 0.9rem;
-      color: #cbd5e1;
+      color: #9ca3af;
+      font-size: 0.88rem;
       margin-top: 2px;
-    }
-    .return-hint {
-      margin-top: 15px;
-      padding: 12px;
-      background: #16213e;
-      border: 1px solid #ffd369;
-      border-radius: 5px;
-      color: #ffd369;
-      font-weight: bold;
     }
   </style>
 </head>
 <body>
-
-  <div id="opening-screen" tabindex="0" role="region" aria-label="マヤカシ タイトル画面">
-    <div class="opening-title">マヤカシ</div>
-    <div class="opening-sub">閉ざされた館で交錯する言葉と嘘 - 言葉の裏側を見抜くテキスト推理ゲーム</div>
-    <div class="opening-prompt">クリック・タップ、または Enter キーを押して進む</div>
-    <div id="opening-actions" class="actions">
-      <button id="opening-enter-btn" type="button">次へ進む</button>
+  <div class="container">
+    <!-- オープニング画面 -->
+    <div id="opening-screen" role="region" aria-label="タイトル画面" tabindex="0">
+      <div class="opening-kicker">TEXT WEREWOLF MYSTERY</div>
+      <div class="opening-title">『マヤカシ』</div>
+      <div class="opening-subtitle">— 吹雪の館に潜む、偽りの仮面を見破れ —</div>
+      <div class="opening-story">
+        激しい吹雪によって外界から完全に閉ざされた山奥の古い洋館。<br>
+        そこに集められた5人の男女の中に、夜な夜な人を襲う<strong>【人狼】</strong>が1人紛れ込んでいます。<br><br>
+        昼は互いの言葉や仕草、役職の宣言から嘘を見抜き、夜は特殊能力と恐怖の中で朝を待つ。<br>
+        最後まで生き残り、真実に辿り着くのは村人か、それとも人狼か——。
+      </div>
+      <div class="opening-prompt">画面をクリックするか、エンターキーを押してゲーム開始</div>
+      <button id="opening-enter-btn" type="button">タイトルから進む</button>
     </div>
-  </div>
 
-  <div id="game-screen" style="display: none;">
-    <h1 id="setup-title-heading">マヤカシ</h1>
+    <!-- ゲーム本編画面 -->
+    <div id="game-screen" style="display: none;">
+      <h1 id="setup-title-heading">『マヤカシ』 - テキスト人狼ゲーム</h1>
 
-    <div id="status" aria-live="polite">準備画面：名前と肩書きを入力して開始してください</div>
-
-    <div id="log" role="log" aria-live="polite" aria-label="ゲーム進行ログ"></div>
-
-    <div id="setup-area" class="setup-box">
-      <label for="player-name-input">あなたの名前（空欄なら「あなた」）</label>
-      <input type="text" id="player-name-input" placeholder="例：タロウ、アリス、探偵など" maxlength="15">
-
-      <label for="player-title-input">あなたの肩書き・職業（空欄ならランダム）</label>
-      <input type="text" id="player-title-input" placeholder="例：旅の作家、元刑事、見習い薬師など" maxlength="15">
-
-      <label for="player-gender-select">あなたの声の性別傾向</label>
-      <select id="player-gender-select">
-        <option value="male">男性</option>
-        <option value="female">女性</option>
-      </select>
-
-      <label for="player-age-select">あなたの年代傾向</label>
-      <select id="player-age-select">
-        <option value="youth">青年</option>
-        <option value="middle" selected>壮年</option>
-        <option value="elder">熟年</option>
-      </select>
-
-      <div id="setup-audio-controls" class="setup-audio-box">
-        <div class="setup-audio-title">BGM・読み上げ設定</div>
-        <div class="audio-controls" role="group" aria-label="音声とBGMの設定">
-          <button id="bgm-toggle-btn" class="audio-on" type="button" aria-pressed="true" onclick="toggleBgm()">
-            BGM：オン
-          </button>
-          <button id="voice-toggle-btn" class="audio-off" type="button" aria-pressed="false" onclick="toggleSpeech()">
-            読み上げ：オフ
-          </button>
+      <div id="setup-audio-controls" class="audio-bar" role="region" aria-label="音声とBGMの設定">
+        <span id="audio-status-label">サウンド・読み上げ設定：</span>
+        <div class="audio-buttons">
+          <button id="bgm-toggle-btn" type="button" class="audio-off" onclick="toggleBgm()" aria-pressed="false">BGM：オフ</button>
+          <button id="voice-toggle-btn" type="button" class="audio-on" onclick="toggleSpeech()" aria-pressed="true">読み上げ：オン</button>
           <div class="rate-group" role="group" aria-label="読み上げ速度">
             <span class="rate-label">速度：</span>
-            <button id="rate-slow" class="rate-btn" type="button" aria-pressed="false" onclick="setSpeechRate('slow')">遅い</button>
-            <button id="rate-normal" class="rate-btn active" type="button" aria-pressed="true" onclick="setSpeechRate('normal')">普通</button>
-            <button id="rate-fast" class="rate-btn" type="button" aria-pressed="false" onclick="setSpeechRate('fast')">速い</button>
+            <button id="rate-slow" type="button" class="rate-btn" onclick="setSpeechRate('slow')">遅い</button>
+            <button id="rate-normal" type="button" class="rate-btn active" onclick="setSpeechRate('normal')">普通</button>
+            <button id="rate-fast" type="button" class="rate-btn" onclick="setSpeechRate('fast')">速い</button>
           </div>
+          <button type="button" class="secondary" onclick="stopSpeech()">読み上げ停止</button>
         </div>
       </div>
-    </div>
 
-    <div id="controls" class="actions" role="region" aria-label="操作ボタン">
-      <button id="start-btn" type="button" onclick="prepareTutorialChoice()">ゲームを始める</button>
-    </div>
+      <div id="setup-area" class="setup-box">
+        <div class="setup-row">
+          <label for="player-name-input">あなたの名前：</label>
+          <input type="text" id="player-name-input" placeholder="例：佐藤（未入力なら「あなた」）" maxlength="12">
+        </div>
+        <div class="setup-row">
+          <label for="player-title-input">あなたの肩書き・職業：</label>
+          <input type="text" id="player-title-input" placeholder="例：探偵、医師、作家（未入力なら自動設定）" maxlength="14">
+        </div>
+        <div class="setup-row">
+          <label for="player-gender-select">あなたの性別：</label>
+          <select id="player-gender-select">
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+          </select>
+        </div>
+        <div class="setup-row">
+          <label for="player-age-select">あなたの年代：</label>
+          <select id="player-age-select">
+            <option value="young">若年（10代〜20代）</option>
+            <option value="middle" selected>中年（30代〜50代）</option>
+            <option value="senior">シニア（60代以上）</option>
+          </select>
+        </div>
+        <p class="setup-note">※全5名（人狼1・占い師1・狩人1・村人2）で進行します。年齢・性別・性格に応じた固定の声で読み上げます。</p>
+      </div>
 
-    <div id="return-banner" class="return-hint" style="display: none;" aria-live="polite">
-      ゲーム終了：画面をクリック・タップ、または Enter キーを押すとオープニング画面に戻ります。
-    </div>
+      <div id="status" aria-live="polite">準備画面：名前と肩書きを入力して開始してください</div>
+      <div id="log" role="log" aria-live="polite"></div>
+      <div class="controls" id="controls">
+        <button id="start-btn" type="button" onclick="prepareTutorialChoice()">ゲームを始める</button>
+      </div>
 
-    <div id="roster-section" role="region" aria-label="参加者名簿" style="display: none;">
-      <h2>参加者名簿（背景・状態）</h2>
-      <ul id="roster-list" class="roster-list"></ul>
+      <div id="return-banner" onclick="returnToOpeningScreen()">
+        ゲーム終了：画面をクリックするか、エンターキーを押すとオープニング画面に戻ります
+      </div>
+
+      <section id="roster-section" aria-label="参加者名簿と背景">
+        <h2>館の参加者名簿（肩書き・背景・現在の状況）</h2>
+        <ul id="roster-list" class="roster-list"></ul>
+      </section>
     </div>
   </div>
 
   <script>
     var TOTAL_PLAYERS = 5;
-    var screenState = 'opening';
     var players = [];
     var day = 1;
     var suspicionScores = {};
     var dayStatements = [];
     var storyChronicle = [];
+    var lastGuardedTargetId = null;
     var pendingVoteTarget = null;
     var pendingEndInfo = null;
-    var lastGuardedTargetId = null;
-    var speechEnabled = false;
+    var screenState = 'opening'; // 'opening' | 'playing' | 'ended'
+    var speechSupported = 'speechSynthesis' in window;
+    var speechEnabled = true;
+
+    // 読み上げ速度設定
     var speechRateMode = 'normal';
-    var lastVictimSceneIndex = -1;
-    var lastMaleVoteLineIndex = -1;
-
-    var bgmEnabled = true;
-    var currentBgmMood = 'opening';
-    var audioCtx = null;
-    var bgmTimerId = null;
-    var bgmStep = 0;
-
     var speechRateMap = {
-      slow: { rate: 0.8, label: '遅い' },
-      normal: { rate: 1.05, label: '普通' },
-      fast: { rate: 1.35, label: '速い' }
+      slow: { rate: 0.78, label: '遅い' },
+      normal: { rate: 1.0, label: '普通' },
+      fast: { rate: 1.28, label: '速い' }
     };
 
+    // Web Audio API BGM管理
+    var audioCtx = null;
+    var bgmEnabled = false;
+    var bgmTimerId = null;
+    var currentBgmMood = 'opening';
+    var bgmStep = 0;
+
+    // ナレーター（進行・状況説明）専用ボイス基準値
     var narratorVoiceProfile = {
       pitch: 0.90,
       rateScale: 0.96
     };
 
+    // 性別ごとの基本声質
     var genderConfig = {
-      male: { label: '男性', pitchOffset: -0.18, rateMultiplier: 0.97 },
-      female: { label: '女性', pitchOffset: 0.24, rateMultiplier: 1.04 }
+      male: { label: '男性', pitchOffset: -0.22, rateMultiplier: 0.97 },
+      female: { label: '女性', pitchOffset: 0.24, rateMultiplier: 1.03 }
     };
 
+    // 年代ごとの声質補正
     var ageConfig = {
-      youth: { label: '青年', pitchOffset: 0.10, rateMultiplier: 1.06 },
-      middle: { label: '壮年', pitchOffset: 0.0, rateMultiplier: 1.0 },
-      elder: { label: '熟年', pitchOffset: -0.14, rateMultiplier: 0.89 }
+      young: { label: '若年', pitchOffset: 0.14, rateMultiplier: 1.06 },
+      middle: { label: '中年', pitchOffset: 0.0, rateMultiplier: 1.0 },
+      senior: { label: 'シニア', pitchOffset: -0.14, rateMultiplier: 0.88 }
     };
 
-    var victimSceneTemplates = [
-      function(label) {
-        return '吹雪の夜が明け、冷え切った広間で' + label + 'が無惨な姿で発見されました。';
+    // NPCプロフィール候補（性別・年代を固定）
+    var npcProfiles = [
+      { name: 'アキラ', gender: 'male', age: 'young' },
+      { name: 'ミサキ', gender: 'female', age: 'young' },
+      { name: 'ケンジ', gender: 'male', age: 'middle' },
+      { name: 'ユミ', gender: 'female', age: 'middle' },
+      { name: 'ゲンゾウ', gender: 'male', age: 'senior' },
+      { name: 'シズエ', gender: 'female', age: 'senior' },
+      { name: 'タクミ', gender: 'male', age: 'middle' },
+      { name: 'ナオコ', gender: 'female', age: 'middle' },
+      { name: 'ハルト', gender: 'male', age: 'young' },
+      { name: 'カオリ', gender: 'female', age: 'young' }
+    ];
+
+    // 肩書きと背景・職業別のセリフバリエーション
+    var jobPool = [
+      {
+        title: '元刑事',
+        bio: '長年数々の難事件を追ってきた退役捜査官。観察眼が鋭い。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'だ。現場の空気と人の目の動きには敏感でね。嘘はすぐに見抜かせてもらうよ。」'; },
+            function(p) { return '「俺は' + p.title + 'の' + p.name + '。吹雪で閉じ込められたからといって、好き勝手はさせない。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'です。長年の勘と観察力で、この館に潜む嘘を必ず暴いてみせます。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。容疑者の小さな矛盾も見逃さないわ。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「捜査の勘が警告している。' + target + 'の受け答えには、どうにも不自然な間があるな。」'; },
+            function(target) { return '「証言を照らし合わせると、一番辻褄が合わないのは' + target + 'だ。」'; }
+          ],
+          female: [
+            function(target) { return '「刑事の勘がそう告げているわ。' + target + 'の言葉には、隠された意図があるはずよ。」'; },
+            function(target) { return '「発言の矛盾を洗っていくと、どうしても' + target + 'に行き着くのよね。」'; }
+          ]
+        }
       },
-      function(label) {
-        return '薄暗い廊下の突き当たりで、' + label + 'が無惨な姿で発見されました。窓ガラスには鋭い爪痕が残っています。';
+      {
+        title: '外科医',
+        bio: '冷静沈着な勤務医。人の表情や声の震えの変化に敏感。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'です。人の脈拍や顔色の変化には慣れています。冷静に対処しましょう。」'; },
+            function(p) { return '「' + p.title + 'をしている' + p.name + 'と申します。パニックにならず、一つずつ事実を確認していきましょう。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。緊急時こそ冷静な判断が必要ですわ。よろしくお願いします。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。顔色や声の震えを見れば、誰が動揺しているか分かります。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「医師の目から見ても、' + target + 'は過度な緊張を隠そうとしているように見えます。」'; },
+            function(target) { return '「冷静に観察する限り、最も言動が不安定なのは' + target + 'ですね。」'; }
+          ],
+          female: [
+            function(target) { return '「顔色や呼吸の乱れを見る限り、' + target + 'は何か大きな隠し事をしていますわ。」'; },
+            function(target) { return '「診断を下すわけではありませんが、' + target + 'の様子が一番不自然に映ります。」'; }
+          ]
+        }
       },
-      function(label) {
-        return '燃え尽きた暖炉のそばで、' + label + 'が無惨な姿で発見されました。館の中に不穏な静寂が漂います。';
+      {
+        title: '推理作家',
+        bio: '人間心理を題材にする小説家。矛盾点を見つけるのが得意。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'だ。まるで小説のような閉鎖空間だが、犯人のトリックは必ず解き明かしてみせる。」'; },
+            function(p) { return '「' + p.title + 'をしている' + p.name + 'です。人の心理と嘘のつき方には詳しいつもりですよ。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。物語ならここで事件が起きるところですが、現実は私が食い止めてみせますわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。登場人物の誰が仮面を被っているか、じっくり観察させてもらうわ。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「物語の筋書きとして見るなら、一番怪しい動きをしているのは' + target + 'だな。」'; },
+            function(target) { return '「発言の端々に伏線がある。' + target + 'は自分の立場を守ろうと必死すぎるよ。」'; }
+          ],
+          female: [
+            function(target) { return '「ミステリーの定石通りなら、一番無実を装っている' + target + 'こそが黒幕よ。」'; },
+            function(target) { return '「言葉の選び方に違和感があるわ。' + target + 'のセリフには真実味が欠けているの。」'; }
+          ]
+        }
       },
-      function(label) {
-        return '夜の気配がまだ残る階段の踊り場で、' + label + 'が無惨な姿で発見されました。誰もが言葉を失っています。';
+      {
+        title: '古美術商',
+        bio: '真贋を見極める目を持つ商人。言葉の裏を読む癖がある。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。贋作と本物を見分けるのが生業でしてね、人の嘘もすぐに見抜けますよ。」'; },
+            function(p) { return '「' + p.title + 'の' + p.name + 'だ。価値ある真実と偽物の言葉、どちらが本物か見極めさせてもらおう。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。偽物を見抜く目には自信がありますの。よろしくお願いしますわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。どんなに巧妙な贋作でも、必ずどこかにボロが出るものですよ。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「鑑定眼にかけて言わせてもらえば、' + target + 'の態度はどうにも贋作めいていますな。」'; },
+            function(target) { return '「表面を取り繕っても無駄ですぞ、' + target + '。私には偽物の輝きに見えます。」'; }
+          ],
+          female: [
+            function(target) { return '「長年偽物を見てきた私の目には、' + target + 'の振る舞いがどうしても不自然に映りますわ。」'; },
+            function(target) { return '「本物の誠実さとは違いますね。' + target + 'は何かを隠して取り繕っていますわ。」'; }
+          ]
+        }
       },
-      function(label) {
-        return '重い扉が開かれた食堂の片隅で、' + label + 'が無惨な姿で発見されました。夜の闇が容赦なく牙を剥いたのです。';
+      {
+        title: 'ジャーナリスト',
+        bio: '真実を追い求める記者。曖昧な発言を許さない性格。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'だ。曖昧な誤魔化しは許さない、徹底的に事実を追求させてもらうぞ。」'; },
+            function(p) { return '「' + p.title + 'をやっている' + p.name + 'です。この館で何が起きているのか、真実を白日の下に晒しましょう。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'です。どんな些細な情報も聞き逃しませんから、隠していることがあるなら今のうちにどうぞ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。疑問点は納得いくまで追及させてもらうわ。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「取材の経験上、核心に触れようとしない人間が一番怪しい。' + target + '、君のことだよ。」'; },
+            function(target) { return '「質問をはぐらかすのは後ろめたい証拠だ。' + target + 'の弁明には納得できないな。」'; }
+          ],
+          female: [
+            function(target) { return '「一番肝心なところを曖昧にしているのは' + target + 'よ。その理由を説明してもらいたいわ。」'; },
+            function(target) { return '「言葉の裏を取れば取るほど、' + target + 'の立ち回りが不審に浮かび上がってくるわね。」'; }
+          ]
+        }
+      },
+      {
+        title: '大学教授',
+        bio: '論理的思考を重んじる研究者。議論の整合性を重視する。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'です。感情論ではなく、論理と証拠に基づいて議論を進めましょう。」'; },
+            function(p) { return '「' + p.title + 'を務めております' + p.name + 'と申します。冷静に仮説と検証を繰り返せば、必ず答えは出ます。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。混乱した状況こそ、筋道を立てて考えることが大切ですわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。皆さんの発言の整合性を丁寧に検証していきましょう。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「論理的に帰結すれば、最も矛盾を抱えているのは' + target + 'の発言です。」'; },
+            function(target) { return '「前提と結論が噛み合っていませんね。' + target + 'の主張には明らかな飛躍があります。」'; }
+          ],
+          female: [
+            function(target) { return '「議論の筋道を辿ると、' + target + 'だけが合理的な説明を避けているように見えますわ。」'; },
+            function(target) { return '「客観的な整合性を欠いているのは' + target + 'です。そこを検証すべきではなくて？」'; }
+          ]
+        }
+      },
+      {
+        title: '建築士',
+        bio: '館の構造にも詳しい設計士。空間や人の動線をよく見ている。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'です。建物の構造や人の動きには目がいく方です。よろしくお願いします。」'; },
+            function(p) { return '「' + p.title + 'をしている' + p.name + 'だ。この古い館の造りも、誰がどこにいたかもよく観察させてもらうよ。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。空間の違和感や人の動線には敏感な方ですわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。全体のバランスを見ながら、冷静に状況を見極めたいと思います。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「全体のバランスを崩しているのは' + target + 'だ。立ち位置が不自然に揺らいでいる。」'; },
+            function(target) { return '「動線や振る舞いを見ていると、' + target + 'だけ周囲と噛み合っていないんだよな。」'; }
+          ],
+          female: [
+            function(target) { return '「場の空気の歪みを作っているのは' + target + 'よ。どこか無理に繕っている感じがあるわ。」'; },
+            function(target) { return '「全体の流れを見ていると、' + target + 'の行動だけどうにも不自然に映るのよね。」'; }
+          ]
+        }
+      },
+      {
+        title: 'ピアニスト',
+        bio: '繊細な聴覚を持つ音楽家。声のトーンの微妙な揺れを聞き分ける。',
+        introLines: {
+          male: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'です。音や声の微妙な響きの違いには敏感でして……皆さんの声、よく聴かせていただきます。」'; },
+            function(p) { return '「' + p.title + 'をしている' + p.name + 'と申します。不協和音を奏でているのが誰なのか、耳を澄ませて見極めます。」'; }
+          ],
+          female: [
+            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。声の震えや息遣いの変化には気づきやすい方ですわ。」'; },
+            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。嘘をつく人の声は、どこか調子が外れて聞こえるものですわ。」'; }
+          ]
+        },
+        suspectLines: {
+          male: [
+            function(target) { return '「声のトーンが少し上ずっていますね。' + target + 'の言葉には不協和音が混じっています。」'; },
+            function(target) { return '「耳を澄ませて聴いていると、' + target + 'の息遣いだけ不自然に乱れているんですよ。」'; }
+          ],
+          female: [
+            function(target) { return '「声の響きに迷いがあるわ。' + target + '、本当のことを隠しているのではなくて？」'; },
+            function(target) { return '「私には聞こえますわ。' + target + 'の言葉には、本心と違う硬い響きが混じっています。」'; }
+          ]
+        }
       }
     ];
+
+    // 夜明けの犠牲者発見演出
+    var victimSceneTemplates = [
+      function(label) { return '夜が明け、冷たい朝の光が差し込む中、' + label + ' が冷たくなって発見されました……。'; },
+      function(label) { return '吹雪が弱まった早朝、広間の片隅で息絶えた ' + label + ' の姿が見つかりました……。'; },
+      function(label) { return '重苦しい朝を迎え、館を見回った一同は、無残な姿となった ' + label + ' を発見しました……。'; },
+      function(label) { return '夜明けの静寂を破るように悲鳴が響き、' + label + ' が人狼の犠牲となったことが判明しました……。'; },
+      function(label) { return '朝の点呼に現れなかった ' + label + ' は、自室の扉の前で冷たくなっていました……。'; }
+    ];
+    var lastVictimSceneIndex = -1;
 
     function formatVictimDiscovery(victim) {
       var label = victim.title + 'の' + victim.name;
@@ -370,20 +714,71 @@
       return victimSceneTemplates[idx](label);
     }
 
-    var maleVoteLineTemplates = [
-      function(targetLabel) {
-        return '「これまでの出来事から推理するに、' + targetLabel + 'が人狼で間違いない。」';
-      },
-      function(targetLabel) {
-        return '「これまでの出来事と発言を照らし合わせれば、' + targetLabel + 'が人狼である可能性が最も高い。」';
-      },
-      function(targetLabel) {
-        return '「どう考えても筋が通らない。' + targetLabel + 'に一票を投じる。」';
-      },
-      function(targetLabel) {
-        return '「迷っている暇はないな。俺は' + targetLabel + 'を人狼と見て投票する。」';
+    // 追放される際のキャラクター別セリフ
+    function getBanishedReaction(npc) {
+      if (npc.isPlayer) {
+        if (npc.role === '人狼') {
+          return {
+            gesture: '観念したように小さく息を吐き、冷ややかな笑みを浮かべる。',
+            line: npc.gender === 'female'
+              ? '「……見抜かれてしまったのなら仕方ないわね。でも、これで終わったと思わないことよ。」'
+              : '「……見破られたか。だが、この館の恐怖はまだ終わらないぞ。」'
+          };
+        }
+        return {
+          gesture: '無念そうに一同を見渡し、静かに扉の方へ歩み出す。',
+          line: npc.gender === 'female'
+            ? '「私は人狼ではありません……。残された皆さんで、どうか真実を見極めてください。」'
+            : '「俺は人狼じゃない……。残ったみんなは、どうか間違えないでくれ。」'
+        };
       }
+
+      var p = npc.personality;
+      var isFemale = npc.gender === 'female';
+      var isWolf = npc.role === '人狼';
+
+      if (p === personalities.timid) {
+        return {
+          gesture: '顔を青ざめさせ、後ずさりながら震える声を絞り出す。',
+          line: isWolf
+            ? (isFemale ? '「い、嫌……！ 私を追い出さないで……こんなはずじゃなかったのに……！」' : '「や、やめろ……！ 僕を吹雪の中に追い出すな……！」')
+            : (isFemale ? '「そ、そんな……私は本当に違うのに……。どうして信じてくれないんですか……！」' : '「ち、違います……僕は人狼なんかじゃないのに……怖いよ……！」')
+        };
+      }
+      if (p === personalities.bold) {
+        return {
+          gesture: '歯を食いしばり、悔しそうに拳を握りしめる。',
+          line: isWolf
+            ? (isFemale ? '「ちっ、ここまでやられては仕方ないわね！ いい度胸じゃない！」' : '「くそっ、バレちまったか！ だが俺を追い出しても後悔するなよ！」')
+            : (isFemale ? '「バカな真似を！ 私を追放したら人狼の思うツボよ！ 絶対に後悔するわよ！」' : '「ふざけるな！ 俺は人狼じゃねぇ！ 目を覚ませ、お前ら！」')
+        };
+      }
+      if (p === personalities.cynical) {
+        return {
+          gesture: '肩をすくめ、皮肉めいた苦笑いを浮かべる。',
+          line: isWolf
+            ? (isFemale ? '「ふふ、なかなか鋭いわね。私の負けを認めてあげるわ。」' : '「やれやれ、君たちの推理力には脱帽するよ。見事な幕引きだ。」')
+            : (isFemale ? '「あらあら、私を追い出すなんて見当違いも甚だしいわね。あとで泣いても知らないわよ。」' : '「やれやれ、無実の人間を吊るすとはね。人狼が陰で笑っているだろうよ。」')
+        };
+      }
+      return {
+        gesture: '静かに目を閉じ、深く息をついて運命を受け入れる。',
+        line: isWolf
+          ? (isFemale ? '「……ここまでですね。皆さんの観察眼に敗れましたわ。」' : '「……完敗だな。君たちの冷静な判断には敵わなかったよ。」')
+          : (isFemale ? '「残念ですが、私ではありません。どうか次の議論では誤らないでください。」' : '「私を追放するのは誤りだ。残された者たちで真実を突き止めてくれ。」')
+      };
+    }
+
+    // プレイヤー（男性）の投票宣言バリエーション
+    var maleVoteLineTemplates = [
+      function(t) { return '「俺は' + t + 'に投票する。今の状況を考えると、この判断が正しいはずだ。」'; },
+      function(t) { return '「迷いはあるが、' + t + 'に一票を入れる。これが一番筋が通っている。」'; },
+      function(t) { return '「議論を踏まえて決めた。俺は' + t + 'を追放すべきだと思う。」'; },
+      function(t) { return '「これ以上犠牲を増やさないためにも、' + t + 'に投票する。」'; },
+      function(t) { return '「消去法で考えても、やはり' + t + 'が一番怪しい。一票を投じる。」'; },
+      function(t) { return '「すまないが、俺は' + t + 'を選ぶ。みんなの意見を総合した結果だ。」'; }
     ];
+    var lastMaleVoteLineIndex = -1;
 
     function pickMaleVoteLine(targetLabel) {
       var idx = Math.floor(Math.random() * maleVoteLineTemplates.length);
@@ -394,488 +789,44 @@
       return maleVoteLineTemplates[idx](targetLabel);
     }
 
-    var banishedReactionPools = {
-      '人狼': {
-        male: [
-          {
-            gesture: '苦々しく舌打ちをし、鋭い視線を残して席を立つ。',
-            line: '「ちっ……詰めが甘かったか。だが、この館の闇は簡単には消えんぞ。」'
-          },
-          {
-            gesture: '低い笑い声を漏らし、不敵な笑みを浮かべながらゆっくりと振り返る。',
-            line: '「ふっ、見事な推理だよ。俺の正体にたどり着くとはね……褒めてやろう。」'
-          },
-          {
-            gesture: '奥歯を噛み締め、悔しさを押し殺しながら重い扉へと歩み出す。',
-            line: '「くそっ、あと一歩だったのに……人間の嗅覚も侮れないということか。」'
-          },
-          {
-            gesture: '肩をすくめ、諦めたように両手を広げてみせる。',
-            line: '「やれやれ、お芝居はここまでか。だが、今夜までによく生き残れたものだな。」'
-          }
-        ],
-        female: [
-          {
-            gesture: '顔を歪め、悔しさを滲ませながら後ろへと下がる。',
-            line: '「くっ……まさかここまで見抜かれていたなんて。覚えてなさいよ！」'
-          },
-          {
-            gesture: '口の端に妖艶な笑みを浮かべ、冷ややかな瞳で一同を見渡す。',
-            line: '「ふふっ、大正解よ。あなたたちを欺くのは、とても楽しい時間だったわ。」'
-          },
-          {
-            gesture: '唇を噛み、忌々しそうに視線を逸らして背を向ける。',
-            line: '「信じられない……私の嘘が破られるなんて。次はこうはいかないわよ。」'
-          },
-          {
-            gesture: '静かにため息をつき、諦めたように優雅な一礼をする。',
-            line: '「あらあら、幕引きの時間が来てしまったみたいね。見事な洞察力だわ。」'
-          }
-        ]
-      },
-      '占い師': {
-        male: [
-          {
-            gesture: '深く息を吐き、無念さを押し殺した表情でうなずく。',
-            line: '「無念だ……俺の言葉が届かなかったか。頼む、残った者たちで人狼を仕留めてくれ。」'
-          },
-          {
-            gesture: '天を仰ぎ、悔しそうに拳を握りしめる。',
-            line: '「俺が本物の占い師だったと、いずれわかるはずだ……どうか嘘に惑わされるな！」'
-          },
-          {
-            gesture: '静かに目を閉じ、残される仲間たちへ最後の言葉を託す。',
-            line: '「星のお告げを伝えきれなかったことが心残りだ……皆、真実を見失わないでくれ。」'
-          },
-          {
-            gesture: '苦笑いを浮かべながら、ゆっくりと広間の出口へ向かう。',
-            line: '「偽物に負けるとは情けないな……だが、俺が残した占いの手がかりを無駄にするなよ。」'
-          }
-        ],
-        female: [
-          {
-            gesture: '胸に手を当て、悲しげに目を伏せる。',
-            line: '「そんな……私は本当に占い師なのに。どうか残った皆さんで人狼を見つけて！」'
-          },
-          {
-            gesture: '涙をこらえながら、真っ直ぐに一同を見つめて訴える。',
-            line: '「私の言葉を信じてもらえなかったのね……お願い、嘘をついている人を見抜いて！」'
-          },
-          {
-            gesture: '静かに首を振り、無念の思いを込めて言葉を紡ぐ。',
-            line: '「私がいなくなれば、もう夜の真実を知る術がなくなるわ……どうか気をつけて。」'
-          },
-          {
-            gesture: '寂しげに微笑み、残された人々に祈るように手を合わせる。',
-            line: '「残念だわ……でも、私が占った結果だけはどうか覚えておいてくださいね。」'
-          }
-        ]
-      },
-      '狩人': {
-        male: [
-          {
-            gesture: '深く息をつき、守れなくなる仲間を案じながら席を立つ。',
-            line: '「俺がいなくなれば、夜の護衛が途切れる……頼む、昼のうちに人狼を突き止めてくれ。」'
-          },
-          {
-            gesture: '悔しそうに肩を落とし、残る人々を気遣うように振り返る。',
-            line: '「くそっ、これからが俺の腕の見せ所だったのに……皆、今夜は最大限に警戒してくれ！」'
-          },
-          {
-            gesture: '静かに胸を叩き、覚悟を決めた表情で一歩退く。',
-            line: '「盾となる役目を果たせず申し訳ない。だが、人狼は必ずこの中にいるぞ。」'
-          },
-          {
-            gesture: '鋭い眼差しで館の闇を見据え、重々しく口を開く。',
-            line: '「狩人を失った意味は大きいぞ……明日の夜が来る前に、必ず決着をつけてくれ。」'
-          }
-        ],
-        female: [
-          {
-            gesture: '静かに手を止め、無念の表情で周囲を見渡す。',
-            line: '「私が追放されたら、夜に誰かを守れなくなってしまうわ……どうか気をつけて！」'
-          },
-          {
-            gesture: '悔しそうに唇を噛み、残る仲間たちへ強い視線を送る。',
-            line: '「私こそが狩人だったのに……これ以上犠牲者を出さないよう、必ず人狼を見つけてね。」'
-          },
-          {
-            gesture: '悲しげに目を伏せ、静かに背筋を伸ばして扉へ向かう。',
-            line: '「みんなを守り抜きたかったわ……私の分まで、どうか生き延びてください。」'
-          },
-          {
-            gesture: '心配そうに周囲を見回し、最後の助言を残す。',
-            line: '「今夜からはもう護衛がいないのよ……誰が嘘をついているのか、冷静に見極めて！」'
-          }
-        ]
-      },
-      '村人': {
-        male: [
-          {
-            gesture: '肩を落とし、納得のいかない面持ちで一歩退く。',
-            line: '「俺じゃない……だが決まってしまった以上、逆らうまい。どうか間違えないでくれよ。」'
-          },
-          {
-            gesture: '両手を広げて潔白を訴えながらも、静かに運命を受け入れる。',
-            line: '「参ったな、無実の俺を追放するとは……人狼の思うツボだぞ、目を覚ませ！」'
-          },
-          {
-            gesture: '深くため息をつき、悔しさを滲ませながら広間を後にする。',
-            line: '「信じてくれとは言わないが、俺が人間だったことはすぐに証明されるさ。」'
-          },
-          {
-            gesture: '険しい表情で一同を見渡し、重く言葉を落とす。',
-            line: '「これで村人が一人減ったわけだ……次は絶対に人狼を逃すなよ。」'
-          }
-        ],
-        female: [
-          {
-            gesture: '戸惑いと悲しみの混じった表情で、周囲を見つめる。',
-            line: '「えっ、私じゃないのに……悔しいけれど、みなさんの無事を祈っています。」'
-          },
-          {
-            gesture: '不安そうに胸元を押さえ、声を震わせながら振り返る。',
-            line: '「どうして私が疑われたの……？ 本当の人狼は、まだこの中にいるのよ！」'
-          },
-          {
-            gesture: '悲しげに首を振り、諦めたように静かにうなずく。',
-            line: '「わかりました……でも、私はただの村人です。どうかこれ以上間違えないでください。」'
-          },
-          {
-            gesture: '寂しげな笑みを浮かべ、残された人々に語りかける。',
-            line: '「疑心暗鬼になるのも無理はないわね……でも、どうか冷静さを失わないで。」'
-          }
-        ]
-      }
-    };
-
-    function getBanishedReaction(target) {
-      var roleKey = banishedReactionPools[target.role] ? target.role : '村人';
-      var genderKey = target.gender === 'female' ? 'female' : 'male';
-      var list = banishedReactionPools[roleKey][genderKey];
-      return list[Math.floor(Math.random() * list.length)];
-    }
-
-    var speechSupported =
-      typeof window !== 'undefined' &&
-      'speechSynthesis' in window &&
-      typeof SpeechSynthesisUtterance !== 'undefined';
-
-    var npcProfiles = [
-      { name: 'アリス', gender: 'female', age: 'youth' },
-      { name: 'ボブ', gender: 'male', age: 'middle' },
-      { name: 'チャーリー', gender: 'male', age: 'youth' },
-      { name: 'デイビッド', gender: 'male', age: 'elder' },
-      { name: 'エマ', gender: 'female', age: 'middle' },
-      { name: 'フランク', gender: 'male', age: 'elder' },
-      { name: 'グレース', gender: 'female', age: 'elder' },
-      { name: 'ヘンリー', gender: 'male', age: 'middle' },
-      { name: 'オリビア', gender: 'female', age: 'youth' },
-      { name: 'ジャック', gender: 'male', age: 'youth' },
-      { name: 'タロウ', gender: 'male', age: 'youth' },
-      { name: 'サクラ', gender: 'female', age: 'youth' },
-      { name: 'ケンジ', gender: 'male', age: 'middle' },
-      { name: 'ハルカ', gender: 'female', age: 'middle' },
-      { name: 'ソウタ', gender: 'male', age: 'youth' },
-      { name: 'ユイ', gender: 'female', age: 'youth' },
-      { name: 'リク', gender: 'male', age: 'youth' },
-      { name: 'アオイ', gender: 'female', age: 'middle' },
-      { name: 'レン', gender: 'male', age: 'middle' },
-      { name: 'ヒナタ', gender: 'female', age: 'elder' },
-      { name: 'レオン', gender: 'male', age: 'middle' },
-      { name: 'ミア', gender: 'female', age: 'youth' },
-      { name: 'カイ', gender: 'male', age: 'youth' },
-      { name: 'ルナ', gender: 'female', age: 'middle' },
-      { name: 'ノア', gender: 'male', age: 'elder' },
-      { name: 'セナ', gender: 'female', age: 'youth' },
-      { name: 'ジル', gender: 'female', age: 'elder' },
-      { name: 'クロエ', gender: 'female', age: 'middle' },
-      { name: 'シオン', gender: 'male', age: 'youth' },
-      { name: 'レイ', gender: 'female', age: 'middle' },
-      { name: 'ハナ', gender: 'female', age: 'youth' },
-      { name: 'コウタ', gender: 'male', age: 'youth' }
-    ];
-
-    var jobPool = [
-      {
-        title: '薬師',
-        bio: '薬草の知識に長け、常に冷静に周囲の体調や変化を観察している。',
-        introLines: {
-          male: [
-            function(p) { return '「薬師をしている' + p.name + 'だ。薬草の調合が本業だが、人の顔色や動揺を見抜くのも得意でね。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。いざという時の手当てはお任せください。まずは落ち着いて話しましょう。」'; }
-          ],
-          female: [
-            function(p) { return '「薬師の' + p.name + 'と申します。こんな吹雪の夜ですから、体調が優れない方がいればいつでも声をかけてくださいね。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。薬草の香りと同じで、嘘にも独特の気配が混じるものなのですよ。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「薬師の目から見ればわかる。' + t + 'は呼吸が浅く、焦りを隠せていないな。」'; },
-            function(t) { return '「眠れぬ夜を過ごした顔色だ……' + t + '、何か後ろめたいことがあるんだろう？」'; }
-          ],
-          female: [
-            function(t) { return '「薬草を扱う者として見過ごせないわ。' + t + 'の脈の乱れと落ち着きのなさ、普通じゃないもの。」'; },
-            function(t) { return '「顔色を見ればわかるのよ。' + t + '、昨晩何かを隠していたでしょう？」'; }
-          ]
-        }
-      },
-      {
-        title: '元刑事',
-        bio: '鋭い眼光を持ち、人の些細な嘘や視線の泳ぎを見逃さない。',
-        introLines: {
-          male: [
-            function(p) { return '「元刑事の' + p.name + 'だ。現役は退いたが、嘘をつく人間の癖を見抜く勘は鈍っていないつもりだ。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'という。密室での事件には慣れっこだが、できれば穏便に解決したいものだな。」'; }
-          ],
-          female: [
-            function(p) { return '「元刑事の' + p.name + 'よ。どんな小さな矛盾も見逃さないわ。後ろめたいことがないなら協力してちょうだい。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。長年いろんな嘘を見てきたけれど、真実は必ずどこかに現れるものよ。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「長年の勘が告げている。' + t + 'の受け答えには、嘘をつく人間特有の曖昧さがある。」'; },
-            function(t) { return '「尋問ならとっくにクロだぜ。' + t + '、話の辻褄が合っていないぞ。」'; }
-          ],
-          female: [
-            function(t) { return '「元刑事として言わせてもらうわ。' + t + 'の視線の泳ぎ方、嘘をついている時の典型よ。」'; },
-            function(t) { return '「証拠を並べるまでもないわね。' + t + '、あなたの証言には矛盾が多すぎるの。」'; }
-          ]
-        }
-      },
-      {
-        title: '旅の商人',
-        bio: '各地を渡り歩いてきた世渡り上手。損得と保身には敏感だ。',
-        introLines: {
-          male: [
-            function(p) { return '「旅の商人の' + p.name + 'と申します。雪宿りのつもりでしたが、とんでもない場に居合わせたようですね。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'さ。商売では相手の本音を見抜くのが命でね、この場でも役に立つはずさ。」'; }
-          ],
-          female: [
-            function(p) { return '「旅の商人をしております' + p.name + 'です。信用が第一の商売ですから、嘘つきを見抜く目には自信がありますわ。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。生きてこの館を出ることが一番の利益ね、協力しましょう。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「商売柄、人の本音には敏感でね。' + t + 'の言葉は信用に値しない、偽物の響きがするよ。」'; },
-            function(t) { return '「損得勘定で動いているのは誰かな？ 俺の目には' + t + 'が一番怪しく映るね。」'; }
-          ],
-          female: [
-            function(t) { return '「たくさんの人を見てきたけれど、' + t + 'のような言葉巧みな人ほど裏があるものよ。」'; },
-            function(t) { return '「信用取引なら絶対に断る相手ね。' + t + '、あなたの言い分には裏がありすぎるわ。」'; }
-          ]
-        }
-      },
-      {
-        title: '神父',
-        bio: '穏やかな物腰で人々の心を和ませるが、罪に対しては厳しい一面を持つ。',
-        introLines: {
-          male: [
-            function(p) { return '「神父の' + p.name + 'と申します。恐れや疑いに心を奪われぬよう、どうか皆さん冷静にお話ししましょう。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'です。闇に迷う魂を導くのが私の務めですが、今宵は皆で助け合わねばなりませんね。」'; }
-          ],
-          female: [
-            function(p) { return '「教会に仕える' + p.title + 'の' + p.name + 'と申します。どうか穏やかな心を忘れず、真実を見つめましょう。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。偽りの言葉は必ず魂を曇らせます。誠実に向き合いましょうね。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「嘘は魂を曇らせます。' + t + '、あなたの瞳の奥に潜む影を見過ごすわけにはいきません。」'; },
-            function(t) { return '「罪を背負う者の重苦しさが伝わってきます……' + t + '、正直に打ち明けてはくれませんか。」'; }
-          ],
-          female: [
-            function(t) { return '「偽りの言葉は必ずほころびを生みます。' + t + '、あなたの振る舞いには深い影が見えますわ。」'; },
-            function(t) { return '「どうか良心に従ってください。今のままでは' + t + 'を疑わざるを得ません。」'; }
-          ]
-        }
-      },
-      {
-        title: '猟師',
-        bio: '山奥で暮らしてきた寡黙な実力者。獣の気配や夜の物音に敏感。',
-        introLines: {
-          male: [
-            function(p) { return '「猟師の' + p.name + 'だ。普段は山にこもっているが、獣の気配や血の匂いには誰よりも敏感なつもりだ。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'という。人狼だろうが何だろうが、獲物の足跡を追うのは俺の領分だ。」'; }
-          ],
-          female: [
-            function(p) { return '「猟師をしている' + p.name + 'よ。山で獣を相手にしてきたから、夜の気配や危険な相手にはすぐ気づくわ。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。口数は少ないけれど、いざという時は頼りにしてちょうだい。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「獣の匂いは誤魔化せない。' + t + 'の周りだけ、妙に血の気配が濃いな。」'; },
-            function(t) { return '「夜行性の獲物を追うのと同じだ。' + t + 'の足取りと視線が一番不自然だぜ。」'; }
-          ],
-          female: [
-            function(t) { return '「山で獣を追ってきた私にはわかるわ。' + t + 'からは獲物を狙う者の気配がするの。」'; },
-            function(t) { return '「夜の物音に一番敏感なのは誰かしらね。' + t + '、あなたの動きはまるで獣のようだわ。」'; }
-          ]
-        }
-      },
-      {
-        title: '書記官',
-        bio: '几帳面な性格で、誰がいつ何を言ったかを細かく記憶している。',
-        introLines: {
-          male: [
-            function(p) { return '「書記官の' + p.name + 'です。皆さんの発言はすべて正確に記録し、矛盾がないか照らし合わせます。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。細かい言質の食い違いを見逃さないのが私の仕事ですので。」'; }
-          ],
-          female: [
-            function(p) { return '「書記官を務めております' + p.name + 'です。誰がいつ何をおっしゃったか、すべて頭に入れておきますわ。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。言葉の記録をたどれば、嘘をついている方は必ず浮かび上がります。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「記録と照合してみたが、' + t + 'の主張は最初の発言と食い違っているぞ。」'; },
-            function(t) { return '「言質は取ってある。' + t + '、なぜさっきと違う態度を取っているんだ？」'; }
-          ],
-          female: [
-            function(t) { return '「発言の記録をたどると、' + t + 'だけ不自然に話をそらしているのがはっきりわかるわ。」'; },
-            function(t) { return '「細かい矛盾は見逃さないの。' + t + '、あなたの説明には穴がありすぎるわね。」'; }
-          ]
-        }
-      },
-      {
-        title: '鍛冶屋',
-        bio: '屈強な体格と真っ直ぐな気性の持ち主。曲がったことが大嫌い。',
-        introLines: {
-          male: [
-            function(p) { return '「鍛冶屋の' + p.name + 'だ！ 小細工や嘘は大嫌いでね、正々堂々と白黒つけようじゃないか。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'という。鉄を鍛えるのと同じで、疑わしい点は徹底的に叩いて確かめるぜ。」'; }
-          ],
-          female: [
-            function(p) { return '「鍛冶屋をやっている' + p.name + 'よ。力仕事なら任せてちょうだい。曲がった真似をする人は許さないわ！」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。真っ直ぐな言葉で話しましょう、隠し事はなしよ。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「真っ直ぐな鉄と歪んだ鉄は叩けばわかる。' + t + '、お前の言葉には歪みがあるな！」'; },
-            function(t) { return '「小細工は大嫌いだ。コソコソ立ち回る' + t + 'が一番怪しいに決まっている！」'; }
-          ],
-          female: [
-            function(t) { return '「鈍った刃みたいに切れ味が悪い言い訳ね。' + t + '、あなたが何か隠してるんでしょう！」'; },
-            function(t) { return '「正々堂々としない態度は気に入らないわ。' + t + '、はっきり白状しなさい！」'; }
-          ]
-        }
-      },
-      {
-        title: '占い師の弟子',
-        bio: '星読みや古い伝承に詳しく、直感的な発言をすることが多い。',
-        introLines: {
-          male: [
-            function(p) { return '「占い師の弟子の' + p.name + 'です。まだ修行の身ですが、星の巡りや不吉な予兆には敏感なつもりです。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。今夜の吹雪にはただならぬ気配を感じていました……慎重に動きましょう。」'; }
-          ],
-          female: [
-            function(p) { return '「占い師の弟子をしている' + p.name + 'と申します。師匠から教わった星読みの知恵が、きっと役に立つはずですわ。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。古い伝承にある人狼の物語が現実になるなんて……でも負けません。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「星の巡りが不吉な影を示している……' + t + '、お前の背後に禍々しい気配が漂っているぞ。」'; },
-            function(t) { return '「古い伝承にある災いの徴だ。' + t + 'の言動には人ならざる影が差している。」'; }
-          ],
-          female: [
-            function(t) { return '「星読みの直感が告げているの。' + t + 'の周りにだけ、冷たい闇の気配が渦巻いているわ。」'; },
-            function(t) { return '「理屈じゃないの、肌で感じるのよ。' + t + '、あなたの言葉には恐ろしい嘘が混じっているわ。」'; }
-          ]
-        }
-      },
-      {
-        title: '宿屋の主人',
-        bio: '客の顔色を見るのが仕事。この集まりの全員の素性を気にかけている。',
-        introLines: {
-          male: [
-            function(p) { return '「宿屋の主人をしている' + p.name + 'です。長年いろんな旅人をもてなしてきましたから、人の素性を見る目には自信があります。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。本来なら温かい食事でお迎えしたいところですが、まずは安全を確保しましょう。」'; }
-          ],
-          female: [
-            function(p) { return '「宿屋の女将をしております' + p.name + 'です。お客様のちょっとした表情の変化にもすぐ気づくのが私の取り柄ですわ。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'よ。騒ぎを起こす方の気配はすぐにわかります、どうか正直にお話しくださいね。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「長年宿を切り盛りしてきたが、' + t + 'のように周囲を値踏みする客は要注意だ。」'; },
-            function(t) { return '「館の空気を乱しているのは' + t + 'だな。他の客とは明らかに様子が違う。」'; }
-          ],
-          female: [
-            function(t) { return '「お客様の様子を見るのが私の仕事よ。' + t + '、さっきから落ち着きがなくて不自然だわ。」'; },
-            function(t) { return '「トラブルを起こす方の顔はすぐにわかるの。' + t + '、何か隠しているわね？」'; }
-          ]
-        }
-      },
-      {
-        title: '流浪の楽師',
-        bio: '飄々とした態度で場を見守る観察者。皮肉交じりの冗談を好む。',
-        introLines: {
-          male: [
-            function(p) { return '「流浪の楽師の' + p.name + 'さ。吹雪に閉じ込められるのも旅の醍醐味だが、命がけの演奏会は勘弁願いたいね。」'; },
-            function(p) { return '「' + p.title + 'の' + p.name + 'と申します。声の調子や言葉のリズムを聴けば、誰が調子外れの嘘をついているかすぐにわかるよ。」'; }
-          ],
-          female: [
-            function(p) { return '「流浪の楽師をしている' + p.name + 'よ。人の声の響きには本音が表れるもの、皆さんの言葉をじっくり聴かせてもらうわ。」'; },
-            function(p) { return '「私は' + p.title + 'の' + p.name + 'です。重苦しい夜だけど、冷静さを失わずに真実の旋律を見つけましょうね。」'; }
-          ]
-        },
-        suspectLines: {
-          male: [
-            function(t) { return '「いやはや、調子外れの旋律が聞こえると思ったら' + t + 'の言い訳だったか。」'; },
-            function(t) { return '「舞台裏の仕掛けが見えてきたね。' + t + '、君の演技は少しばかり大げさすぎるよ。」'; }
-          ],
-          female: [
-            function(t) { return '「あらあら、不協和音が響いているわね。' + t + 'の言葉だけリズムが狂っているもの。」'; },
-            function(t) { return '「素敵な劇だけど、' + t + 'の台本には無理があるみたい。そろそろ本性を現したら？」'; }
-          ]
-        }
-      }
-    ];
-
+    // 性格ごとのセリフ・振る舞い（性別別に語尾・口調を最適化）
     var personalities = {
-      logical: {
+      calm: {
         label: '冷静・論理派',
-        pitchOffset: -0.05,
+        pitchOffset: -0.06,
         rateMultiplier: 0.96,
         gestures: [
-          '静かに腕を組み、全員の顔を順番に見回す。',
-          '指先でテーブルを軽く叩きながら、思考を整理している。',
-          '落ち着いた声色で、感情を抑えるように口を開いた。',
-          '視線を一点に定め、これまでの流れを頭の中で組み立てている。'
+          '腕を組み、落ち着いた視線で一同を見渡す。',
+          '静かに息をつき、言葉を選ぶようにゆっくりと口を開いた。',
+          '眉根をわずかに寄せ、思考を整理するように顎に手を当てる。',
+          '背筋を伸ばし、感情を抑えた穏やかな態度で語り始めた。'
         ],
         lines: {
           male: {
             introPool: [
-              function(p) { return '「私は' + p.title + 'の' + p.name + 'だ。事実と筋道を見極めながら、この状況を整理したい。」'; },
-              function(p) { return '「' + p.title + 'の' + p.name + 'と申します。パニックにならず、一つずつ証拠を積み上げていきましょう。」'; },
-              function(p) { return '「はじめまして、' + p.title + 'の' + p.name + 'だ。感情に流されれば人狼の思うツボだ、冷静に議論しよう。」'; }
+              function(p) { return '「私は' + p.title + 'の' + p.name + 'と申します。感情に流されず、事実を一つずつ整理していきましょう。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'だ。こういう状況こそ落ち着いて話し合うべきだろう、よろしく頼む。」'; },
+              function(p) { return '「はじめまして、' + p.title + 'の' + p.name + 'です。皆さんの発言を丁寧に聞き、冷静に判断したいと思います。」'; }
             ],
             suspectPool: [
-              function(target) { return '「感情論は抜きにしよう。状況を見る限り、' + target + 'の言動には不自然な点が多い。」'; },
-              function(target) { return '「消去法で考えても結論は同じだ。' + target + 'の立ち回りには合理的な説明がつかない。」'; },
-              function(target) { return '「議論の焦点がぼやけているが、最も矛盾を抱えているのは' + target + 'だ。」'; },
-              function(target) { return '「これまでの投票と発言を並べれば明らかだ。' + target + 'を最優先で検証すべきだろう。」'; }
+              function(target) { return '「冷静に考えてみよう。' + target + 'の発言には、筋が通らない点がいくつかある。」'; },
+              function(target) { return '「感情に任せて選ぶべきではない。客観的に見て、最も不審なのは' + target + 'だ。」'; },
+              function(target) { return '「これまでの流れを振り返ると、' + target + 'だけが決定的な追及を避けているな。」'; },
+              function(target) { return '「理屈で考えれば自然と答えが出る。' + target + 'の行動には説明のつかない空白がある。」'; }
             ],
-            declareLine: function() { return '「混乱を避けるために名乗り出よう。私が本物の【占い師】だ。」'; },
-            declareHunterLine: function() { return '「夜の備えとして明かしておこう。私が【狩人】だ。」'; },
-            reportWolf: function(target) { return '「昨晩の占いの結果を報告する。' + target + 'は【人狼】だった。これで議論の軸は決まったな。」'; },
-            reportHuman: function(target) { return '「昨晩は' + target + 'を占った。結果は【村人（白）】だ。少なくとも彼は信用していい。」'; }
+            declareLine: function() { return '「これ以上の混乱を防ぐために名乗り出る。私が本物の【占い師】だ。」'; },
+            declareHunterLine: function() { return '「今夜の護衛に備えて伝えておこう。私が【狩人】だ。」'; },
+            reportWolf: function(target) { return '「昨晩の占い結果を伝えよう。' + target + 'は【人狼】だった。慎重に判断しよう。」'; },
+            reportHuman: function(target) { return '「昨晩は' + target + 'を占った。結果は【村人（白）】だ。今のところは信頼できる。」'; }
           },
           female: {
             introPool: [
-              function(p) { return '「私は' + p.title + 'の' + p.name + 'です。感情に流されず、冷静に手がかりを整理していきましょう。」'; },
-              function(p) { return '「' + p.title + 'の' + p.name + 'と申します。焦りは判断を誤らせますから、一つずつ事実を確かめましょうね。」'; },
-              function(p) { return '「はじめまして、' + p.title + 'の' + p.name + 'よ。誰が本当のことを言っているのか、筋道を立てて見極めましょう。」'; }
+              function(p) { return '「私は' + p.title + 'の' + p.name + 'と申します。感情に流されず、事実を一つずつ整理していきましょう。」'; },
+              function(p) { return '「' + p.title + 'の' + p.name + 'です。こういう状況こそ落ち着いて話し合うべきですね、よろしくお願いいたします。」'; },
+              function(p) { return '「はじめまして、' + p.title + 'の' + p.name + 'と申します。皆さんの発言を丁寧に聞き、冷静に判断したいですわ。」'; }
             ],
             suspectPool: [
-              function(target) { return '「落ち着いて考えてみましょう。' + target + 'の発言には、筋が通らない点がいくつかあります。」'; },
+              function(target) { return '「冷静に考えてみましょう。' + target + 'の発言には、筋が通らない点がいくつかあります。」'; },
               function(target) { return '「感情に任せて選ぶべきではありません。客観的に見て、最も不審なのは' + target + 'です。」'; },
               function(target) { return '「これまでの流れを振り返ると、' + target + 'だけが決定的な追及を避けていますね。」'; },
               function(target) { return '「理屈で考えれば自然と答えが出ます。' + target + 'の行動には説明のつかない空白がありますわ。」'; }
@@ -1789,7 +1740,6 @@
       screenState = 'opening';
       pendingEndInfo = null;
       lastGuardedTargetId = null;
-      storyChronicle = [];
       setBgmMood('opening');
       gameScreenEl.style.display = 'none';
       openingScreenEl.style.display = 'block';
@@ -1946,7 +1896,6 @@
       lastGuardedTargetId = null;
       suspicionScores = {};
       dayStatements = [];
-      storyChronicle = [];
       pendingVoteTarget = null;
       pendingEndInfo = null;
 
@@ -2233,13 +2182,11 @@
       }
     }
 
-    // NPCの議論後にログをリセットしてからプレイヤー発言へ進む
     function proceedToPlayerSpeech() {
       clearLog();
       showPlayerDiscussionActions();
     }
 
-    // プレイヤー脱落時もログをリセットしてから議論の整理へ進む
     function proceedToSummaryWithoutPlayer() {
       clearLog();
       showDiscussionSummaryPhase();
@@ -2634,7 +2581,6 @@
       );
     }
 
-    // 投票を行った後もログをリセットしてから投票宣言を表示する
     function showPlayerVoteSpeech(target) {
       var me = players[0];
       if (!me.alive) {
@@ -2725,11 +2671,9 @@
       if (topCandidates.length > 1) {
         var namesText = topCandidates.map(function(p) { return p.title + 'の' + p.name; }).join(' と ');
         addLog('投票の結果（各' + maxVotes + '票の同票）、' + namesText + ' が追放されました。', 'system', '', true, null);
-        storyChronicle.push(day + '日目の昼：同票の末、' + namesText + 'が館から追放された。');
       } else if (topCandidates.length === 1) {
         var onlyExecuted = topCandidates[0];
         addLog('投票の結果（' + maxVotes + '票）、' + onlyExecuted.title + 'の' + onlyExecuted.name + ' が追放されました。', 'system', '', true, null);
-        storyChronicle.push(day + '日目の昼：議論と投票により、' + onlyExecuted.title + 'の' + onlyExecuted.name + '（' + onlyExecuted.role + '）が追放された。');
       }
 
       topCandidates.forEach(function(banished) {
@@ -2853,11 +2797,9 @@
               addLog('闇に紛れて' + target.title + 'の' + target.name + ' が襲撃されました。', 'system', '', true, null);
               if (guardedTargetId === target.id) {
                 addLog('しかし、狩人の護衛によって襲撃は阻まれ、' + target.title + 'の' + target.name + ' は無事に生き延びました！', 'declare-msg', '', true, null);
-                storyChronicle.push(day + '日目の夜：人狼が' + target.title + 'の' + target.name + 'を襲ったが、狩人の護衛によって阻止された。');
               } else {
                 target.alive = false;
                 addLog(formatVictimDiscovery(target), 'system', '', true, null);
-                storyChronicle.push(day + '日目の夜：闇の中で' + target.title + 'の' + target.name + '（' + target.role + '）が人狼の犠牲となった。');
               }
               day++;
               updateStatus();
@@ -2876,11 +2818,9 @@
             if (victim) {
               if (guardedTargetId === victim.id) {
                 addLog('今夜は人狼が' + victim.title + 'の' + victim.name + 'を襲撃しようとしましたが、狩人の護衛によって犠牲者は出ませんでした！', 'declare-msg', '', true, null);
-                storyChronicle.push(day + '日目の夜：人狼が' + victim.title + 'の' + victim.name + 'を狙ったが、狩人の護衛が成功し犠牲者は出なかった。');
               } else {
                 victim.alive = false;
                 addLog(formatVictimDiscovery(victim), 'system', '', true, null);
-                storyChronicle.push(day + '日目の夜：' + victim.title + 'の' + victim.name + '（' + victim.role + '）が人狼に襲われ命を落とした。');
               }
             }
           }
@@ -2965,10 +2905,18 @@
       return false;
     }
 
+    // 一画面で読み切れるコンパクトなエンディング画面
     function showEndingStory() {
       if (!pendingEndInfo) return;
+      var info = pendingEndInfo;
+      pendingEndInfo = null;
+      screenState = 'ended';
       setBgmMood('ending');
+      if (info.isPlayerWin) {
+        playVictorySe();
+      }
       clearLog();
+      updateStatus();
 
       var wolfMembers = players.filter(function(p) { return p.role === '人狼'; });
       var wolfNames = wolfMembers.map(function(w) { return w.title + 'の' + w.name; }).join('、');
@@ -2978,79 +2926,27 @@
         : '誰も残らなかった';
 
       addLog('=== エンディング：閉ざされた館の記憶 ===', 'system', '', true, null);
+      addLog(info.resultMessage, 'system', '', true, null);
+
+      var epilogueText = info.winnerSide === 'village'
+        ? '館の闇に潜んでいた人狼は、' + wolfNames + 'でした。夜明けとともに吹雪は止み、生き残った' + survivorNames + 'は深い安堵とともに朝の光の中へと踏み出していきました。'
+        : '最後まで人々を欺き通した人狼の正体は、' + wolfNames + 'でした。吹雪が降り続く古い館にはもはや人の声はなく、すべてを飲み込んだ静寂だけが残りました。';
 
       addLog(
-        '吹雪に閉ざされた古い館に集まった' + players.length + '人。疑心と偽りが交錯する日々の中で、それぞれの言葉と選択が運命を分かつことになりました。',
+        epilogueText,
         'ending-msg',
         '静かなピアノと弦の調べが、館の長い夜を包み込む。',
         true,
         null
       );
 
-      if (storyChronicle.length > 0) {
-        addLog('--- 館で起きた出来事の振り返り ---', 'system', '', true, null);
-        storyChronicle.forEach(function(entry) {
-          addLog('・' + entry, 'ending-msg', '', true, null);
-        });
-      }
+      var roleSummaryLines = ['【すべての参加者の正体】'].concat(
+        players.map(function(p) {
+          return '・' + p.title + ' ' + p.name + '：【' + p.role + '】（' + (p.alive ? '生存' : '脱落') + '）';
+        })
+      );
+      addLog(roleSummaryLines.join('\n'), 'summary-msg', '', true, null);
 
-      if (pendingEndInfo.winnerSide === 'village') {
-        addLog(
-          '館の闇に潜んでいた人狼は、' + wolfNames + 'でした。人々は互いの言葉を見極め、ついに偽りの仮面を打ち破ったのです。',
-          'ending-msg',
-          '',
-          true,
-          null
-        );
-        addLog(
-          'やがて夜明けとともに吹雪は止み、重い館の扉が開かれました。生き残った' + survivorNames + 'は、深い安堵とともに朝の光の中へと踏み出していきます。',
-          'ending-msg',
-          '',
-          true,
-          null
-        );
-      } else {
-        addLog(
-          '最後まで人々の目を欺き通した人狼の正体は、' + wolfNames + 'でした。疑念の渦の中で村人たちは判断を誤り、館の支配権は闇へと渡ったのです。',
-          'ending-msg',
-          '',
-          true,
-          null
-        );
-        addLog(
-          '吹雪が降り続く古い館には、もはや人の声は響きません。すべてを飲み込んだ静寂だけが、いつまでも残り続けました。',
-          'ending-msg',
-          '',
-          true,
-          null
-        );
-      }
-
-      addActionHint('物語を振り返ったら、結果発表へ進むボタンを押してください。');
-      controlsEl.innerHTML = '<button type="button" onclick="proceedToFinalResult()">結果発表へ進む</button>';
-    }
-
-    function proceedToFinalResult() {
-      if (!pendingEndInfo) return;
-      var info = pendingEndInfo;
-      pendingEndInfo = null;
-      endGame(info.resultMessage, info.mood, info.isPlayerWin);
-    }
-
-    function endGame(resultMessage, mood, isPlayerWin) {
-      screenState = 'ended';
-      setBgmMood(mood || 'victory');
-      if (isPlayerWin) {
-        playVictorySe();
-      }
-      clearLog();
-      updateStatus();
-      addLog('=== 結果発表 ===', 'system', '', true, null);
-      addLog(resultMessage, 'system', '', true, null);
-      addLog('--- すべての参加者の正体 ---', 'system', '', true, null);
-      players.forEach(function(p) {
-        addLog(p.title + ' ' + p.name + '：正体は【' + p.role + '】 (' + (p.alive ? '生存' : '脱落') + ')', '', '', true, null);
-      });
       addActionHint('オープニング画面に戻るボタンを押すか、エンターキーを押してください。');
       returnBannerEl.style.display = 'block';
       controlsEl.innerHTML = '<button type="button" onclick="returnToOpeningScreen()">オープニング画面に戻る</button>';
