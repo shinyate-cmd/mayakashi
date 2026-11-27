@@ -16,7 +16,7 @@
     }
     h1 {
       font-size: 1.5rem;
-      margin: 0;
+      margin: 0 0 12px 0;
     }
     h2 {
       font-size: 1.1rem;
@@ -54,23 +54,15 @@
     #game-screen {
       display: none;
     }
-    .top-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #444;
+    .setup-audio-box {
+      padding-top: 8px;
+      border-top: 1px solid #2d3e66;
     }
-    .top-bar.bottom-bar {
-      margin-top: 20px;
-      margin-bottom: 0;
-      padding-top: 12px;
-      padding-bottom: 4px;
-      border-bottom: none;
-      border-top: 1px solid #444;
+    .setup-audio-title {
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      color: #ffd369;
     }
     .audio-controls {
       display: flex;
@@ -82,10 +74,10 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: #16213e;
+      background: #0f3460;
       padding: 4px 8px;
       border-radius: 5px;
-      border: 1px solid #334;
+      border: 1px solid #445;
     }
     .rate-label {
       font-size: 0.85rem;
@@ -243,28 +235,11 @@
     <div class="opening-prompt">クリック・タップ、または Enter キーを押して進む</div>
     <div id="opening-actions" class="actions">
       <button id="opening-enter-btn" type="button">次へ進む</button>
-      <button id="opening-bgm-btn" class="audio-on" type="button" aria-pressed="true">BGM：オン</button>
     </div>
   </div>
 
   <div id="game-screen" style="display: none;">
-    <div id="header-bar" class="top-bar">
-      <h1>マヤカシ</h1>
-      <div class="audio-controls" role="group" aria-label="音声とBGMの設定">
-        <button id="bgm-toggle-btn" class="audio-on" type="button" aria-pressed="true" onclick="toggleBgm()">
-          BGM：オン
-        </button>
-        <button id="voice-toggle-btn" class="audio-off" type="button" aria-pressed="false" onclick="toggleSpeech()">
-          読み上げ：オフ
-        </button>
-        <div class="rate-group" role="group" aria-label="読み上げ速度">
-          <span class="rate-label">速度：</span>
-          <button id="rate-slow" class="rate-btn" type="button" aria-pressed="false" onclick="setSpeechRate('slow')">遅い</button>
-          <button id="rate-normal" class="rate-btn active" type="button" aria-pressed="true" onclick="setSpeechRate('normal')">普通</button>
-          <button id="rate-fast" class="rate-btn" type="button" aria-pressed="false" onclick="setSpeechRate('fast')">速い</button>
-        </div>
-      </div>
-    </div>
+    <h1 id="setup-title-heading">マヤカシ</h1>
 
     <div id="status" aria-live="polite">準備画面：名前と肩書きを入力して開始してください</div>
 
@@ -289,6 +264,24 @@
         <option value="middle" selected>壮年</option>
         <option value="elder">熟年</option>
       </select>
+
+      <div id="setup-audio-controls" class="setup-audio-box">
+        <div class="setup-audio-title">BGM・読み上げ設定</div>
+        <div class="audio-controls" role="group" aria-label="音声とBGMの設定">
+          <button id="bgm-toggle-btn" class="audio-on" type="button" aria-pressed="true" onclick="toggleBgm()">
+            BGM：オン
+          </button>
+          <button id="voice-toggle-btn" class="audio-off" type="button" aria-pressed="false" onclick="toggleSpeech()">
+            読み上げ：オフ
+          </button>
+          <div class="rate-group" role="group" aria-label="読み上げ速度">
+            <span class="rate-label">速度：</span>
+            <button id="rate-slow" class="rate-btn" type="button" aria-pressed="false" onclick="setSpeechRate('slow')">遅い</button>
+            <button id="rate-normal" class="rate-btn active" type="button" aria-pressed="true" onclick="setSpeechRate('normal')">普通</button>
+            <button id="rate-fast" class="rate-btn" type="button" aria-pressed="false" onclick="setSpeechRate('fast')">速い</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="controls" class="actions" role="region" aria-label="操作ボタン">
@@ -306,7 +299,7 @@
   </div>
 
   <script>
-    var TOTAL_PLAYERS = 7;
+    var TOTAL_PLAYERS = 5;
     var screenState = 'opening';
     var players = [];
     var day = 1;
@@ -532,7 +525,7 @@
           },
           {
             gesture: '険しい表情で一同を見渡し、重く言葉を落とす。',
-            line: '「これで村人が一人減ったわけだ……次は絶対に人も逃すなよ。」'
+            line: '「これで村人が一人減ったわけだ……次は絶対に人狼を逃すなよ。」'
           }
         ],
         female: [
@@ -555,7 +548,6 @@
         ]
       }
     };
-    banishedReactionPools['村人'].male[3].line = '「これで村人が一人減ったわけだ……次は絶対に人狼を逃すなよ。」';
 
     function getBanishedReaction(target) {
       var roleKey = banishedReactionPools[target.role] ? target.role : '村人';
@@ -1101,9 +1093,9 @@
 
     var openingScreenEl = document.getElementById('opening-screen');
     var openingEnterBtn = document.getElementById('opening-enter-btn');
-    var openingBgmBtn = document.getElementById('opening-bgm-btn');
     var gameScreenEl = document.getElementById('game-screen');
-    var headerBarEl = document.getElementById('header-bar');
+    var setupTitleHeadingEl = document.getElementById('setup-title-heading');
+    var setupAudioControlsEl = document.getElementById('setup-audio-controls');
     var bgmToggleBtn = document.getElementById('bgm-toggle-btn');
     var voiceToggleBtn = document.getElementById('voice-toggle-btn');
     var rateSlowBtn = document.getElementById('rate-slow');
@@ -1120,21 +1112,6 @@
     var rosterSectionEl = document.getElementById('roster-section');
     var rosterListEl = document.getElementById('roster-list');
     var returnBannerEl = document.getElementById('return-banner');
-
-    // 本編以降はタイトル・BGM・読み上げ・速度ボタンを画面一番下へ配置し、
-    // スクリーンリーダーの「ページ先頭から全文読み上げ」でログ本文がすぐ読まれるようにする
-    function setMainChromePlacement(isMainGameplay) {
-      if (!headerBarEl || !gameScreenEl) return;
-      if (isMainGameplay) {
-        headerBarEl.classList.add('bottom-bar');
-        gameScreenEl.appendChild(headerBarEl);
-      } else {
-        headerBarEl.classList.remove('bottom-bar');
-        if (gameScreenEl.firstChild !== headerBarEl) {
-          gameScreenEl.insertBefore(headerBarEl, gameScreenEl.firstChild);
-        }
-      }
-    }
 
     function ensureAudioContext() {
       var AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -1667,24 +1644,16 @@
     }
 
     function updateAudioButtonsUI() {
+      if (!bgmToggleBtn || !voiceToggleBtn) return;
+
       if (bgmEnabled) {
         bgmToggleBtn.textContent = 'BGM：オン';
         bgmToggleBtn.className = 'audio-on';
         bgmToggleBtn.setAttribute('aria-pressed', 'true');
-        if (openingBgmBtn) {
-          openingBgmBtn.textContent = 'BGM：オン';
-          openingBgmBtn.className = 'audio-on';
-          openingBgmBtn.setAttribute('aria-pressed', 'true');
-        }
       } else {
         bgmToggleBtn.textContent = 'BGM：オフ';
         bgmToggleBtn.className = 'audio-off';
         bgmToggleBtn.setAttribute('aria-pressed', 'false');
-        if (openingBgmBtn) {
-          openingBgmBtn.textContent = 'BGM：オフ';
-          openingBgmBtn.className = 'audio-off';
-          openingBgmBtn.setAttribute('aria-pressed', 'false');
-        }
       }
 
       if (!speechSupported) {
@@ -1692,9 +1661,9 @@
         voiceToggleBtn.disabled = true;
         voiceToggleBtn.className = 'audio-off';
         voiceToggleBtn.setAttribute('aria-pressed', 'false');
-        rateSlowBtn.disabled = true;
-        rateNormalBtn.disabled = true;
-        rateFastBtn.disabled = true;
+        if (rateSlowBtn) rateSlowBtn.disabled = true;
+        if (rateNormalBtn) rateNormalBtn.disabled = true;
+        if (rateFastBtn) rateFastBtn.disabled = true;
         return;
       }
       voiceToggleBtn.disabled = false;
@@ -1713,10 +1682,20 @@
         { mode: 'fast', btn: rateFastBtn }
       ];
       map.forEach(function(item) {
+        if (!item.btn) return;
         var isCurrent = speechRateMode === item.mode;
         item.btn.className = 'rate-btn' + (isCurrent ? ' active' : '');
         item.btn.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
       });
+    }
+
+    function removeAudioControlsAfterSetup() {
+      if (setupAudioControlsEl && setupAudioControlsEl.parentNode) {
+        setupAudioControlsEl.parentNode.removeChild(setupAudioControlsEl);
+      }
+      if (setupTitleHeadingEl && setupTitleHeadingEl.parentNode) {
+        setupTitleHeadingEl.parentNode.removeChild(setupTitleHeadingEl);
+      }
     }
 
     function setSpeechRate(mode) {
@@ -1797,7 +1776,6 @@
       stopSpeech();
       ensureAudioContext();
       setBgmMood('calm');
-      setMainChromePlacement(false);
       screenState = 'playing';
       openingScreenEl.style.display = 'none';
       gameScreenEl.style.display = 'block';
@@ -1813,10 +1791,8 @@
       lastGuardedTargetId = null;
       storyChronicle = [];
       setBgmMood('opening');
-      setMainChromePlacement(false);
       gameScreenEl.style.display = 'none';
       openingScreenEl.style.display = 'block';
-      updateAudioButtonsUI();
       returnBannerEl.style.display = 'none';
       rosterSectionEl.style.display = 'none';
       setupAreaEl.style.display = 'flex';
@@ -1830,14 +1806,6 @@
       e.stopPropagation();
       goToSetupScreen();
     });
-
-    if (openingBgmBtn) {
-      openingBgmBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleBgm();
-      });
-    }
 
     openingScreenEl.addEventListener('click', function(e) {
       if (e.target && e.target.closest && e.target.closest('button')) {
@@ -1862,9 +1830,6 @@
       if (e.isComposing) return;
       if (e.key === 'Enter' || e.keyCode === 13) {
         if (screenState === 'opening') {
-          if (document.activeElement === openingBgmBtn) {
-            return;
-          }
           e.preventDefault();
           if (bgmEnabled && bgmTimerId === null) {
             ensureAudioContext();
@@ -1959,8 +1924,9 @@
       return list[Math.floor(Math.random() * list.length)];
     }
 
+    // 5名構成：人狼1・占い師1・狩人1・村人2
     function buildRoleDeckForCount(count) {
-      var base = ['人狼', '占い師', '狩人', '村人', '村人', '村人', '村人'];
+      var base = ['人狼', '占い師', '狩人', '村人', '村人'];
       if (count > base.length) {
         while (base.length < count) {
           base.push('村人');
@@ -1972,7 +1938,7 @@
     function prepareTutorialChoice() {
       ensureAudioContext();
       setBgmMood('calm');
-      setMainChromePlacement(false);
+      removeAudioControlsAfterSetup();
       clearLog();
       day = 1;
       lastVictimSceneIndex = -1;
@@ -2051,21 +2017,21 @@
     }
 
     function showTutorialAndStart() {
-      setMainChromePlacement(false);
+      removeAudioControlsAfterSetup();
       clearLog();
       var guideText =
-        '【「マヤカシ」の進め方（全' + TOTAL_PLAYERS + '名・人狼1名／占い師1名／狩人1名／村人4名）】\n' +
+        '【「マヤカシ」の進め方（全' + TOTAL_PLAYERS + '名・人狼1名／占い師1名／狩人1名／村人2名）】\n' +
         '1. 参加者' + TOTAL_PLAYERS + '人の中に1人だけ【人狼】が紛れ、占い師・狩人・村人がそれぞれの役目を担います。\n' +
         '2. 【昼】はみんなの言葉や役職の宣言を聞き、議論の整理を確認したうえで怪しいと思う人に投票して追放します（同票の最多得票者が複数いる場合は全員追放されます）。\n' +
         '3. 【夜】は占い師が1人の正体を調べ、狩人が1人を護衛し、人狼が1人を襲撃します（護衛された人は襲撃から守られます）。\n' +
-        '4. 勝敗が決するまで3日目以降も昼と夜が続き、人狼を追放すれば【村人陣営の勝利】、生存する人狼と村人側の数が同じになると【人狼陣営の勝利】です。';
+        '4. 勝敗が決するまで昼と夜が続き、人狼を追放すれば【村人陣営の勝利】、生存する人狼と村人側の数が同じになると【人狼陣営の勝利】です。';
       addLog(guideText, 'guide-msg');
       addActionHint('説明を読んでゲームを始めるボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="beginMainGame()">説明を読んでゲームを始める</button>';
     }
 
     function beginMainGame() {
-      setMainChromePlacement(true);
+      removeAudioControlsAfterSetup();
       setBgmMood('calm');
       clearLog();
       addLog('『マヤカシ』 - 吹雪によって外界と閉ざされた古い館。この' + players.length + '人の中に、夜な夜な人を襲う【人狼】が1人紛れ込んでいる。', 'system', '', true, null);
@@ -2078,7 +2044,7 @@
     }
 
     function startIntroductions() {
-      setMainChromePlacement(true);
+      removeAudioControlsAfterSetup();
       setBgmMood('calm');
       clearLog();
       addLog('=== 全員集合：自己紹介（' + players.length + '名） ===', 'system', '', true, null);
@@ -2111,7 +2077,7 @@
     }
 
     function startDayPhase() {
-      setMainChromePlacement(true);
+      removeAudioControlsAfterSetup();
       if (evaluateGameOutcome('other')) {
         return;
       }
@@ -2258,17 +2224,31 @@
       renderRosterPanel();
 
       if (players[0].alive) {
-        showPlayerDiscussionActions();
+        addActionHint('全員の議論を確認したら、プレーヤーの発言に進むボタンを押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="proceedToPlayerSpeech()">プレーヤーの発言に進む</button>';
       } else {
         addLog(players[0].name + 'は脱落しているため発言できません。議論の整理を確認してから投票へ進みましょう。', 'system', '', true, null);
-        showDiscussionSummaryPhase();
+        addActionHint('議論の整理へ進むボタンを押してください。');
+        controlsEl.innerHTML = '<button type="button" onclick="proceedToSummaryWithoutPlayer()">議論の整理へ進む</button>';
       }
+    }
+
+    // NPCの議論後にログをリセットしてからプレイヤー発言へ進む
+    function proceedToPlayerSpeech() {
+      clearLog();
+      showPlayerDiscussionActions();
+    }
+
+    // プレイヤー脱落時もログをリセットしてから議論の整理へ進む
+    function proceedToSummaryWithoutPlayer() {
+      clearLog();
+      showDiscussionSummaryPhase();
     }
 
     function showPlayerDiscussionActions() {
       var me = players[0];
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
-      addLog('--- ' + me.name + 'の発言ターン（投票前の駆け引き） ---', 'system', '', true, null);
+      addLog('=== ' + day + '日目の昼：' + me.name + 'の発言ターン ===', 'system', '', true, null);
       addActionHint('誰かを怪しいと指摘する、意見に賛同または反論する、役職を名乗り出る、様子を見る、から選んでください。');
       controlsEl.innerHTML = '';
 
@@ -2276,11 +2256,13 @@
       btnSuspect.type = 'button';
       btnSuspect.textContent = '誰かを怪しいと指摘する';
       btnSuspect.onclick = function() {
+        clearLog();
         addLog('誰を怪しいと主張しますか？', 'system', '', true, null);
         addActionHint('怪しいと思う人物のボタンを押してください。やり直す場合は戻るを押してください。');
         renderButtons(
           players.filter(function(p) { return p.alive && !p.isPlayer; }),
           function(target) {
+            clearLog();
             var line = me.gender === 'female'
               ? '「みなさん聞いてください。' + target.title + 'の' + target.name + 'の言動が不自然です。人狼に違いありません。」'
               : '「みんな聞いてくれ。' + target.title + 'の' + target.name + 'の言動が不自然だ。人狼に違いない。」';
@@ -2333,6 +2315,7 @@
           btnDeclare.textContent = '嘘をついて【占い師】と名乗り出る';
         }
         btnDeclare.onclick = function() {
+          clearLog();
           var claimRole = me.role === '狩人' ? '狩人' : '占い師';
           me.declaredRole = claimRole;
           renderRosterPanel();
@@ -2385,6 +2368,7 @@
         btnReport.className = 'declare-btn';
         btnReport.textContent = '占い結果を報告する';
         btnReport.onclick = function() {
+          clearLog();
           if (me.role === '占い師' && me.lastSeerResult) {
             var t = players.find(function(p) { return p.id === me.lastSeerResult.targetId; });
             if (t) {
@@ -2412,6 +2396,7 @@
       btnPass.className = 'secondary';
       btnPass.textContent = '発言を控えて様子を見る';
       btnPass.onclick = function() {
+        clearLog();
         addLog(speakerLabel + 'は言葉少なに周囲の反応を観察している。', '', '静かに息を潜め、全員の表情を見つめる。', true, me);
         dayStatements.push({
           speaker: me,
@@ -2429,10 +2414,12 @@
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
       var aliveStatements = dayStatements.filter(function(st) { return st.speaker && st.speaker.alive && !st.speaker.isPlayer && st.kind !== 'declare'; });
       if (aliveStatements.length === 0) {
+        clearLog();
         showPlayerDiscussionActions();
         return;
       }
 
+      clearLog();
       addLog(stanceType === 'agree' ? '誰の意見に賛同しますか？' : '誰の意見に反論しますか？', 'system', '', true, null);
       addActionHint('対象となる発言のボタンを押してください。やり直す場合は戻るを押してください。');
       controlsEl.innerHTML = '';
@@ -2442,6 +2429,7 @@
         btn.type = 'button';
         btn.textContent = st.summary;
         btn.onclick = function() {
+          clearLog();
           var spLabel = st.speaker.title + 'の' + st.speaker.name;
           var tgLabel = st.target ? (st.target.title + 'の' + st.target.name) : '';
 
@@ -2513,7 +2501,10 @@
       backBtn.type = 'button';
       backBtn.className = 'secondary';
       backBtn.textContent = '戻る';
-      backBtn.onclick = function() { showPlayerDiscussionActions(); };
+      backBtn.onclick = function() {
+        clearLog();
+        showPlayerDiscussionActions();
+      };
       controlsEl.appendChild(backBtn);
     }
 
@@ -2525,6 +2516,7 @@
       renderButtons(
         players.filter(function(p) { return p.alive && !p.isPlayer; }),
         function(target) {
+          clearLog();
           controlsEl.innerHTML = '';
           addLog(target.title + 'の' + target.name + 'について、どちらの嘘を報告しますか？', 'system', '', true, null);
           addActionHint('人狼だと嘘をつく、または、村人側だと嘘をつくボタンを押してください。');
@@ -2532,6 +2524,7 @@
           btnWolf.type = 'button';
           btnWolf.textContent = target.title + 'の' + target.name + 'は【人狼】だと嘘をつく';
           btnWolf.onclick = function() {
+            clearLog();
             addLog(speakerLabel + '「昨晩、' + target.title + 'の' + target.name + 'を占った結果、【人狼】でした。」', 'declare-msg', '', true, me);
             dayStatements.push({
               speaker: me,
@@ -2547,6 +2540,7 @@
           btnHuman.className = 'secondary';
           btnHuman.textContent = target.title + 'の' + target.name + 'は【村人側】だと嘘をつく';
           btnHuman.onclick = function() {
+            clearLog();
             addLog(speakerLabel + '「昨晩、' + target.title + 'の' + target.name + 'を占った結果、【村人側（白）】でした。」', 'declare-msg', '', true, me);
             dayStatements.push({
               speaker: me,
@@ -2565,7 +2559,6 @@
     }
 
     function showDiscussionSummaryPhase() {
-      setMainChromePlacement(true);
       setBgmMood('suspense');
       addLog('=== ' + day + '日目の議論の整理 ===', 'system', '', true, null);
 
@@ -2625,12 +2618,12 @@
     }
 
     function startVotePhase() {
-      setMainChromePlacement(true);
       if (!players[0].alive) {
         executeVote(null);
         return;
       }
       setBgmMood('suspense');
+      clearLog();
       pendingVoteTarget = null;
       addLog('=== ' + day + '日目の投票フェーズ ===', 'system', '', true, null);
       addLog('議論を踏まえ、誰を追放しますか？', 'system', '', true, null);
@@ -2641,12 +2634,14 @@
       );
     }
 
+    // 投票を行った後もログをリセットしてから投票宣言を表示する
     function showPlayerVoteSpeech(target) {
       var me = players[0];
       if (!me.alive) {
         executeVote(null);
         return;
       }
+      clearLog();
       pendingVoteTarget = target;
       var speakerLabel = '【' + me.title + ' ' + me.name + '】';
       var targetLabel = target.title + 'の' + target.name;
@@ -2654,13 +2649,13 @@
         ? '「私は' + targetLabel + 'に投票します。今の状況を考えると、この判断が正しいと思うわ。」'
         : pickMaleVoteLine(targetLabel);
 
+      addLog('=== ' + day + '日目の投票宣言 ===', 'system', '', true, null);
       addLog(speakerLabel + voteSpeech, 'suspect-msg', '投票箱の前に進み、静かに決断を口にする。', true, me);
       addActionHint('投票結果を確認するボタンを押してください。');
       controlsEl.innerHTML = '<button type="button" onclick="executeVote(pendingVoteTarget)">投票結果を確認する</button>';
     }
 
     function executeVote(playerChoice) {
-      setMainChromePlacement(true);
       setBgmMood('suspense');
       clearLog();
       addLog('=== ' + day + '日目の投票結果 ===', 'system', '', true, null);
@@ -2749,7 +2744,6 @@
     }
 
     function startNightPhase() {
-      setMainChromePlacement(true);
       setBgmMood('night');
       clearLog();
       updateStatus();
@@ -2818,7 +2812,6 @@
     }
 
     function runHunterAndWolfNight(playerGuardedId) {
-      setMainChromePlacement(true);
       setBgmMood('night');
       var guardedTargetId = playerGuardedId;
 
@@ -2901,7 +2894,6 @@
     }
 
     function evaluateGameOutcome(phase) {
-      setMainChromePlacement(true);
       var aliveWolves = players.filter(function(p) { return p.alive && p.role === '人狼'; });
       var aliveHumans = players.filter(function(p) { return p.alive && p.role !== '人狼'; });
       var wolves = aliveWolves.length;
@@ -2975,7 +2967,6 @@
 
     function showEndingStory() {
       if (!pendingEndInfo) return;
-      setMainChromePlacement(true);
       setBgmMood('ending');
       clearLog();
 
@@ -3047,7 +3038,6 @@
     }
 
     function endGame(resultMessage, mood, isPlayerWin) {
-      setMainChromePlacement(true);
       screenState = 'ended';
       setBgmMood(mood || 'victory');
       if (isPlayerWin) {
@@ -3081,7 +3071,10 @@
         backBtn.type = 'button';
         backBtn.className = 'secondary';
         backBtn.textContent = '戻る';
-        backBtn.onclick = function() { showPlayerDiscussionActions(); };
+        backBtn.onclick = function() {
+          clearLog();
+          showPlayerDiscussionActions();
+        };
         controlsEl.appendChild(backBtn);
       }
     }
