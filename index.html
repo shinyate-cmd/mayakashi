@@ -380,7 +380,7 @@
       <div id="setup-audio-controls" class="audio-bar" role="region" aria-label="音声とBGMの設定">
         <span id="audio-status-label">サウンド・読み上げ設定：</span>
         <div class="audio-buttons">
-          <button id="bgm-toggle-btn" type="button" class="audio-off" onclick="toggleBgm()" aria-pressed="false">BGM：オフ</button>
+          <button id="bgm-toggle-btn" type="button" class="audio-on" onclick="toggleBgm()" aria-pressed="true">BGM：オン</button>
           <button id="voice-toggle-btn" type="button" class="audio-on" onclick="toggleSpeech()" aria-pressed="true">読み上げ：オン</button>
           <div class="rate-group" role="group" aria-label="読み上げ速度">
             <span class="rate-label">速度：</span>
@@ -458,9 +458,9 @@
       fast: { rate: 1.28, label: '速い' }
     };
 
-    // Web Audio API BGM管理
+    // Web Audio API BGM管理（デフォルトでオン）
     var audioCtx = null;
-    var bgmEnabled = false;
+    var bgmEnabled = true;
     var bgmTimerId = null;
     var currentBgmMood = 'opening';
     var bgmStep = 0;
@@ -1079,7 +1079,7 @@
     function playTone(freq, duration, type, peakGain, attack, release, filterFreq, delaySec) {
       if (!bgmEnabled || !freq || freq <= 0) return;
       var ctx = ensureAudioContext();
-      if (!ctx) return;
+      if (!ctx || ctx.state !== 'running') return;
 
       var startAt = ctx.currentTime + (delaySec || 0);
       var osc = ctx.createOscillator();
@@ -1118,7 +1118,7 @@
     function playExpressiveInstrument(instrument, freq, duration, peakGain, delaySec) {
       if (!bgmEnabled || !freq || freq <= 0) return;
       var ctx = ensureAudioContext();
-      if (!ctx) return;
+      if (!ctx || ctx.state !== 'running') return;
 
       var startAt = ctx.currentTime + (delaySec || 0);
 
@@ -1478,6 +1478,7 @@
       }
       if (!bgmEnabled) return;
 
+      ensureAudioContext();
       var mood = currentBgmMood;
       var pat = bgmPatterns[mood] || bgmPatterns.calm;
       bgmStep = 0;
@@ -1485,6 +1486,9 @@
 
       var tick = function() {
         if (!bgmEnabled) return;
+        var ctx = ensureAudioContext();
+        if (!ctx || ctx.state !== 'running') return;
+
         var activeMood = currentBgmMood;
 
         if (activeMood === 'opening') {
@@ -1723,6 +1727,20 @@
       addLog('操作案内：' + hintText, 'action-hint-log', '', true, null);
     }
 
+    function unlockAndStartOpeningBgm() {
+      if (!bgmEnabled) return;
+      var ctx = ensureAudioContext();
+      if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+        ctx.resume().then(function() {
+          if (screenState === 'opening' && bgmTimerId === null) {
+            startBgmLoop();
+          }
+        }).catch(function() {});
+      } else if (screenState === 'opening' && bgmTimerId === null) {
+        startBgmLoop();
+      }
+    }
+
     function goToSetupScreen() {
       stopSpeech();
       ensureAudioContext();
@@ -1761,11 +1779,23 @@
       if (e.target && e.target.closest && e.target.closest('button')) {
         return;
       }
-      if (screenState === 'opening' && bgmEnabled && bgmTimerId === null) {
-        ensureAudioContext();
-        setBgmMood('opening');
-      }
       goToSetupScreen();
+    });
+
+    // ブラウザの自動再生制限対策：最初のユーザー操作時に即座にオーディオを有効化
+    ['pointerdown', 'keydown', 'touchstart'].forEach(function(evtName) {
+      document.addEventListener(evtName, function() {
+        if (bgmEnabled) {
+          var ctx = ensureAudioContext();
+          if (ctx && ctx.state === 'suspended') {
+            ctx.resume().then(function() {
+              if (bgmTimerId === null) startBgmLoop();
+            }).catch(function() {});
+          } else if (bgmTimerId === null) {
+            startBgmLoop();
+          }
+        }
+      }, { passive: true });
     });
 
     gameScreenEl.addEventListener('click', function(e) {
@@ -1781,10 +1811,6 @@
       if (e.key === 'Enter' || e.keyCode === 13) {
         if (screenState === 'opening') {
           e.preventDefault();
-          if (bgmEnabled && bgmTimerId === null) {
-            ensureAudioContext();
-            setBgmMood('opening');
-          }
           goToSetupScreen();
         } else if (screenState === 'ended') {
           var tag = document.activeElement ? document.activeElement.tagName : '';
@@ -2975,7 +3001,10 @@
       }
     }
 
+    // 初回起動時の初期化とオープニングBGMの自動開始
     updateAudioButtonsUI();
+    currentBgmMood = 'opening';
+    startBgmLoop();
   </script>
 </body>
 </html>
